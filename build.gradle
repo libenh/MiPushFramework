@@ -4,36 +4,25 @@ buildscript {
     ext.kotlin_version = '1.8.0'
 
     repositories {
-        maven { url = uri("https://maven.aliyun.com/repository/central") }
-        maven { url = uri("https://maven.aliyun.com/repository/public") }
-        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
-        maven { url = uri("https://maven.aliyun.com/repository/google") }
-
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-        gradlePluginPortal()
         google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://jitpack.io' }
     }
+
     dependencies {
         classpath 'com.android.tools.build:gradle:7.4.2'
         classpath 'org.greenrobot:greendao-gradle-plugin:3.3.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'io.github.wurensen:gradle-android-plugin-aspectjx:3.3.2'
     }
-
 }
 
 allprojects {
     repositories {
-        maven { url = uri("https://maven.aliyun.com/repository/central") }
-        maven { url = uri("https://maven.aliyun.com/repository/public") }
-        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
-        maven { url = uri("https://maven.aliyun.com/repository/google") }
-
+        google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        gradlePluginPortal()
-        google()
     }
 
     gradle.taskGraph.whenReady {
@@ -67,8 +56,10 @@ def getVersionCode = { ->
 }
 
 def getVersionName = { ->
-    String versionName  = project.findProperty('versionName') ?: getVersionNameFromGit() ?: "VersionNameError"
+    String versionName = project.findProperty('versionName') ?: getVersionNameFromGit() ?: "VersionNameError"
+
     versionName = increaseVersionForPreRelease(versionName)
+
     return versionName.replaceFirst("^v", "")
 }
 
@@ -78,6 +69,7 @@ private static String increaseVersionForPreRelease(String versionName) {
             return it[1] + (it[2].toInteger() + 1)
         })
     }
+
     return versionName
 }
 
@@ -89,7 +81,6 @@ private String getVersionNameFromGit() {
     try {
         def stdout = new ByteArrayOutputStream()
         exec {
-            // v0.3.10-187-gef4be8c9-dirty
             commandLine 'git', 'describe', '--tags', '--dirty', '--exclude', 'v*-*'
             standardOutput = stdout
         }
@@ -103,21 +94,24 @@ ext {
     minSdkVersion = 21
     compileSdkVersion = 33
     targetSdkVersion = 30
-    pushVersionCode = 7
 
+    pushVersionCode = 7
     gitVersionCode = getVersionCode()
     gitVersionName = getVersionName()
+
     snapshot = false
+
     versionBase = gitVersionName
     versionName = snapshot ? versionBase + "-SNAPSHOT" : versionBase
+
     gitTag = versionName
 
-    // Work
     work_version = "1.0.0-alpha05"
 }
 
 task exportVersion(type: Exec) {
     commandLine 'sh'
+
     doLast {
         file("$projectDir/version.txt").text = """$versionName"""
         file("$projectDir/gitTag.txt").text = """$gitTag"""
