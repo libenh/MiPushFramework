@@ -24,7 +24,19 @@ jobs:
           cache: gradle
 
       - name: Setup signing
-        if: ${{ secrets.SIGNING_KEY != '' }}
+        if: ${{ env.SIGNING_KEY != '' }}
+        env:
+     SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+    KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+    KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+    KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+  shell: bash
+  run: |
+    echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> local.properties
+    echo "KEYSTORE_ALIAS=$KEYSTORE_ALIAS" >> local.properties
+    echo "KEY_PASSWORD=$KEY_PASSWORD" >> local.properties
+    echo "KEY_LOCATE=../release.keystore" >> local.properties
+    echo "$SIGNING_KEY" | base64 --decode > release.keystore
         shell: bash
         run: |
           echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
