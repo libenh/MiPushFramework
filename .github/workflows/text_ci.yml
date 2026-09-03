@@ -24,73 +24,51 @@ jobs:
           cache: gradle
 
       - name: Setup signing
-        if: ${{ env.SIGNING_KEY != '' }}
-        env:
-     SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-    KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-    KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
-    KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-  shell: bash
-  run: |
-    echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> local.properties
-    echo "KEYSTORE_ALIAS=$KEYSTORE_ALIAS" >> local.properties
-    echo "KEY_PASSWORD=$KEY_PASSWORD" >> local.properties
-    echo "KEY_LOCATE=../release.keystore" >> local.properties
-    echo "$SIGNING_KEY" | base64 --decode > release.keystore
         shell: bash
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
-          echo "KEYSTORE_ALIAS=${{ secrets.KEYSTORE_ALIAS }}" >> local.properties
-          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> local.properties
+          if [ -z "$SIGNING_KEY" ]; then
+            echo "No signing key configured, skipping signing setup."
+            exit 0
+          fi
+
+          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> local.properties
+          echo "KEYSTORE_ALIAS=$KEYSTORE_ALIAS" >> local.properties
+          echo "KEY_PASSWORD=$KEY_PASSWORD" >> local.properties
           echo "KEY_LOCATE=../release.keystore" >> local.properties
-          echo "${{ secrets.SIGNING_KEY }}" | base64 --decode > release.keystore
+
+          echo "$SIGNING_KEY" | base64 --decode > release.keystore
 
       - name: Grant execute permission
-        run: chmod +x gradlew
+        run: chmod +x ./gradlew
 
-      - name: Check Gradle
-        run: ./gradlew --version
-
-      - name: Check repositories
+      - name: Check AndroidX dependency
         shell: bash
         run: |
-          echo "Checking Google Maven..."
-          curl -I --retry 3 --retry-delay 2 \
-            --connect-timeout 20 \
-            --max-time 60 \
-            https://dl.google.com/dl/android/maven2/ || true
+          set -e
+          URL="https://dl.google.com/dl/android/maven2/androidx/legacy/legacy-support-core-utils/1.0.0/legacy-support-core-utils-1.0.0.pom"
+          echo "Checking: $URL"
+          curl -fL --retry 3 --retry-delay 2 -I "$URL"
 
-          echo "Checking Maven Central..."
-          curl -I --retry 3 --retry-delay 2 \
-            --connect-timeout 20 \
-            --max-time 60 \
-            https://repo.maven.apache.org/maven2/ || true
-
-      - name: Build
+      - name: Build Normal Release
         shell: bash
         run: |
-          set +e
+          set -o pipefail
 
           for i in 1 2 3; do
-            echo "========================================"
-            echo "Gradle build attempt: $i / 3"
-            echo "========================================"
+            echo "===== Build attempt $i/3 ====="
 
-            ./gradlew build \
-              --stacktrace \
-              --no-daemon
-
-            status=$?
-
-            if [ "$status" -eq 0 ]; then
+            if ./gradlew assembleNormalRelease --stacktrace --no-daemon; then
               echo "Build succeeded."
               exit 0
             fi
 
-            echo "Build failed with exit code: $status"
-
             if [ "$i" -lt 3 ]; then
-              echo "Waiting 15 seconds before retry..."
+              echo "Build failed. Retrying in 15 seconds..."
               sleep 15
             fi
           done
@@ -98,17 +76,11 @@ jobs:
           echo "Build failed after 3 attempts."
           exit 1
 
-      - name: Collect APKs
-        if: always()
-        shell: bash
-        run: |
-          mkdir -p artifacts
-          find . -type f -name "*.apk" -exec cp {} artifacts/ \;
-
-      - name: Upload APKs
-        if: always()
+      - name: Upload APK
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: MiPushFramework-${{ github.sha }}
-          path: artifacts/
-          if-no-files-found: warn
+          name: MiPushFramework-NormalRelease
+          path: |
+            **/build/outputs/apk/**/*.apk
+          if-no-files-found: error
