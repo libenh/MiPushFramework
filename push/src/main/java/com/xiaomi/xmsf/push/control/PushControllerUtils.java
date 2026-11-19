@@ -8,10 +8,7 @@ import android.content.Context;
  * Lifecycle, registration, preferences and process detection are implemented
  * by focused controllers so callers do not need to know their internals.
  */
-public final class PushControllerUtils {
-    private PushControllerUtils() {
-    }
-
+public class PushControllerUtils {
     public static void registerPush(Context context, int retryIndex) {
         PushRegistrationController.scheduleRetry(context, retryIndex);
     }
