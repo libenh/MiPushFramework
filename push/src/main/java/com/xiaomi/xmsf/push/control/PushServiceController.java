@@ -21,7 +21,6 @@ import com.xiaomi.xmsf.FirstRegister;
 import com.xiaomi.xmsf.push.service.receivers.BootReceiver;
 import com.xiaomi.xmsf.push.service.receivers.KeepAliveReceiver;
 
-import top.trumeet.common.utils.rom.RomUtils;
 
 /**
  * Owns start/stop and boot integration for the embedded Xiaomi push service.
