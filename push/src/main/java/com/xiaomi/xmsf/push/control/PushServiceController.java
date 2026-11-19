@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat;
 
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
-import com.xiaomi.channel.commonutils.logger.MyLog;
 import com.xiaomi.mipush.sdk.MiPushClient;
 import com.xiaomi.push.service.PushServiceConstants;
 import com.xiaomi.xmsf.FirstRegister;
