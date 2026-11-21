@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -167,9 +168,12 @@ private fun Description(description: String) {
 private fun Title(title: String) {
     Row(
         Modifier
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(
+                MaterialTheme.colorScheme.primaryContainer,
+                RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp)
+            )
             .fillMaxWidth()
-            .fillMaxHeight(0.4f)
+            .fillMaxHeight(0.42f)
     ) {
         Text(
             title,
@@ -177,7 +181,7 @@ private fun Title(title: String) {
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier
                 .align(Alignment.Bottom)
-                .padding(16.dp)
+                .padding(horizontal = 24.dp, vertical = 28.dp)
         )
     }
 }
@@ -186,7 +190,11 @@ private fun Title(title: String) {
 private fun BottomBar(
     currentItem: MutableState<Int>, permissions: List<PermissionInfo>
 ) {
-    BottomAppBar(modifier = Modifier.height(56.dp)) {
+    BottomAppBar(
+        modifier = Modifier.height(72.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 3.dp
+    ) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
