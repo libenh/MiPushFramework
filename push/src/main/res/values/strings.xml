@@ -285,4 +285,9 @@ This could be the application doing a reverse registration, or the registration 
     <string name="try_to_force_register_all_applications">Try to force register all applications</string>
 
 
+
+    <string name="settings_fluid_cloud">Fluid Cloud</string>
+    <string name="settings_fluid_cloud_enabled">Enable Fluid Cloud integration</string>
+    <string name="settings_fluid_cloud_summary">Allow eligible ongoing notifications explicitly marked by push configuration to request platform promotion. Android 16+ only; ordinary chat notifications are not promoted.</string>
+
 </resources>
