@@ -6,15 +6,17 @@ import java.lang.reflect.Method;
 import java.util.Locale;
 
 /**
- * Detects the shared OPPO/OnePlus/realme ROM family without relying on a
- * single vendor property, which may be absent on regional builds.
+ * Detects ROMs based on the shared OPPO/OnePlus/realme platform.
+ *
+ * Detection prefers explicit vendor properties. Device brand alone is not
+ * sufficient because devices from these vendors can also run AOSP-based ROMs.
  */
 public class OplusChecker implements RomChecker {
-    private static final String[] ROM_PROPERTIES = {
+    private static final String[] OPLUS_ROM_PROPERTIES = {
             "ro.build.version.oplusrom",
             "ro.build.version.oplusrom.display",
             "ro.oplus.version",
-            "ro.build.version.ota"
+            "ro.oxygen.version"
     };
 
     @Override
@@ -22,11 +24,13 @@ public class OplusChecker implements RomChecker {
         StringBuilder fingerprint = new StringBuilder();
         append(fingerprint, Build.DISPLAY);
         append(fingerprint, Build.FINGERPRINT);
-        append(fingerprint, Build.MANUFACTURER);
-        append(fingerprint, Build.BRAND);
 
-        for (String property : ROM_PROPERTIES) {
-            append(fingerprint, getSystemProperty(property));
+        for (String property : OPLUS_ROM_PROPERTIES) {
+            String value = getSystemProperty(property);
+            if (value != null && !value.isEmpty()) {
+                return true;
+            }
+            append(fingerprint, value);
         }
         return containsOplusRomMarker(fingerprint.toString());
     }
@@ -39,8 +43,7 @@ public class OplusChecker implements RomChecker {
         return normalized.contains("coloros")
                 || normalized.contains("realme ui")
                 || normalized.contains("realmeui")
-                || normalized.contains("oxygenos")
-                || normalized.contains("oplusrom");
+                || normalized.contains("oxygenos");
     }
 
     private static void append(StringBuilder target, String value) {
