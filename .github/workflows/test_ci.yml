@@ -24,12 +24,22 @@ jobs:
 
     - name: Write key
       run: |
-        if [ ! -z "${{ secrets.SIGNING_KEY }}" ]; then
+        if [ -n "${{ secrets.SIGNING_KEY }}" ]; then
           echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}' >> local.properties
           echo KEYSTORE_ALIAS='${{ secrets.KEYSTORE_ALIAS }}' >> local.properties
           echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}' >> local.properties
           echo KEY_LOCATE='../release.keystore' >> local.properties
           echo ${{ secrets.SIGNING_KEY }} | base64 --decode > release.keystore
+        else
+          keytool -genkeypair -noprompt \
+            -keystore .yuuta.jks \
+            -storepass android -keypass android \
+            -alias androiddebugkey \
+            -dname "CN=MiPushFramework CI,O=libenh,C=CN" \
+            -keyalg RSA -keysize 2048 -validity 10000
+          echo "KEYSTORE_PASS=android" >> "$GITHUB_ENV"
+          echo "ALIAS_NAME=androiddebugkey" >> "$GITHUB_ENV"
+          echo "ALIAS_PASS=android" >> "$GITHUB_ENV"
         fi
 
     - name: Git describe
