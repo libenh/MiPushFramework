@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -58,6 +60,7 @@ import top.trumeet.mipush.provider.entities.RegisteredApplication
 import top.trumeet.mipush.provider.entities.RegisteredApplication.RegisteredType
 import top.trumeet.mipushframework.component.MarkdownView
 import top.trumeet.ui.theme.Theme
+import top.trumeet.mipushframework.utils.applyOplusWindowStyle
 
 class ApplicationInfoPage : ComponentActivity() {
     companion object {
@@ -75,14 +78,7 @@ class ApplicationInfoPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         init(getRegisteredApplication()!!)
-        setContent {
-            Theme {
-                window.navigationBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    NavigationBarDefaults.Elevation
-                ).toArgb()
-            }
-            SettingsApp()
-        }
+        setContent { SettingsApp() }
     }
 
     private fun getRegisteredApplication(): RegisteredApplication? {
