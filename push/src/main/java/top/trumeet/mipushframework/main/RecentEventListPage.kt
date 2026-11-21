@@ -20,21 +20,20 @@ import androidx.core.view.WindowCompat
 import top.trumeet.mipushframework.component.SearchBar
 import top.trumeet.mipushframework.main.subpage.EventList
 import top.trumeet.ui.theme.Theme
+import top.trumeet.mipushframework.utils.applyOplusWindowStyle
 
 class RecentEventListPage : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        applyOplusWindowStyle()
         val packageName = intent.dataString!!
         setContent {
             Theme {
-                window.navigationBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    NavigationBarDefaults.Elevation
-                ).toArgb()
                 Column(
                     Modifier
                         .statusBarsPadding()
+                        .navigationBarsPadding()
                         .fillMaxSize(),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
