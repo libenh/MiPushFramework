@@ -14,6 +14,9 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -114,6 +117,8 @@ class ApplicationInfoPage : ComponentActivity() {
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
                     .verticalScroll(rememberScrollState()),
                 color = MaterialTheme.colorScheme.background
             ) {
@@ -141,7 +146,12 @@ class ApplicationInfoPage : ComponentActivity() {
         else applicationInfo.getIcon(context)
         val icon = drawable.toBitmap().asImageBitmap()
         Row(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f))
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton({
