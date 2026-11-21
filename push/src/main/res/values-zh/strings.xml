@@ -267,4 +267,9 @@
     <string name="wizard_title_ignore_battery_optimizations_text">您需要授予“忽略电池优化”权限，否则您可能将无法在后台运行mipush服务。</string>
 
 
+
+    <string name="settings_fluid_cloud">流体云</string>
+    <string name="settings_fluid_cloud_enabled">启用流体云适配</string>
+    <string name="settings_fluid_cloud_summary">允许符合条件且由推送配置明确标记的持续通知请求系统提升。仅 Android 16 及以上系统有效；不会把普通聊天通知强制变成流体云。</string>
+
 </resources>
