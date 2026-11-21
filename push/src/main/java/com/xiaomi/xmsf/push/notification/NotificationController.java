@@ -140,6 +140,19 @@ public class NotificationController {
         processIcon(context, packageName, notificationBuilder);
 
         CustomConfiguration configuration = XMPushUtils.getConfiguration(metaInfo);
+        boolean liveUpdateRequested = isLiveUpdateRequested(configuration);
+        if (liveUpdateRequested) {
+            // ColorOS 16/17 Fluid Cloud follows Android's promoted ongoing notification contract.
+            // Keep one stable notification identity: repeated MiPush updates replace this entry,
+            // while NotificationController.cancel() ends the activity.
+            notificationBuilder
+                    .setOngoing(true)
+                    .setAutoCancel(false)
+                    .setOnlyAlertOnce(true)
+                    .setCategory(Notification.CATEGORY_PROGRESS)
+                    .setGroup(null)
+                    .setGroupSummary(false);
+        }
         String iconUri = configuration.notificationLargeIconUri(null);
         Bitmap largeIcon = getLargeIcon(context, metaInfo, iconUri);
         if (largeIcon != null) {
@@ -169,11 +182,52 @@ public class NotificationController {
             notificationBuilder.addExtras(focusBundle);
         }
 
-        notificationBuilder.setAutoCancel(true);
+        if (!liveUpdateRequested) {
+            notificationBuilder.setAutoCancel(true);
+        }
         Notification notification = notificationBuilder.build();
+        if (liveUpdateRequested && isEligibleForLiveUpdate(notification)) {
+            // EXTRA_REQUEST_PROMOTED_ONGOING is API 36+. Use the platform key so this
+            // project can retain its current compileSdk while C17/API 37 handles promotion.
+            notification.extras.putBoolean("android.requestPromotedOngoing", true);
+            notification.extras.putBoolean("mipush.live_update", true);
+        }
         getNotificationManagerEx().notify(
                 packageName, getNotificationTag(packageName), notificationId, notification);
         return notification;
+    }
+
+    /**
+     * Live Updates are opt-in per MiPush payload. Ordinary chat/alert notifications must not be
+     * promoted into an ongoing activity. The stable notificationId supplied to publish() is the
+     * activity identity; publishing again updates it and cancel() ends it.
+     */
+    private static boolean isLiveUpdateRequested(CustomConfiguration configuration) {
+        return Build.VERSION.SDK_INT >= 36
+                && "true".equalsIgnoreCase(configuration.get("mipush.live_update", "false"));
+    }
+
+    private static boolean isEligibleForLiveUpdate(Notification notification) {
+        if (notification == null || notification.extras == null) {
+            return false;
+        }
+        if ((notification.flags & Notification.FLAG_ONGOING_EVENT) == 0
+                || (notification.flags & Notification.FLAG_GROUP_SUMMARY) != 0
+                || notification.contentView != null
+                || notification.bigContentView != null
+                || notification.headsUpContentView != null) {
+            return false;
+        }
+        CharSequence title = notification.extras.getCharSequence(Notification.EXTRA_TITLE);
+        if (TextUtils.isEmpty(title)) {
+            return false;
+        }
+        String template = notification.extras.getString("android.template");
+        return TextUtils.isEmpty(template)
+                || template.contains("BigTextStyle")
+                || template.contains("ProgressStyle")
+                || template.contains("CallStyle")
+                || template.contains("MetricStyle");
     }
 
     @Nullable
