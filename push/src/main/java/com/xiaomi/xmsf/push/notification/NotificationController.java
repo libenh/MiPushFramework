@@ -214,8 +214,7 @@ public class NotificationController {
      * activity identity; publishing again updates it and cancel() ends it.
      */
     private static boolean isLiveUpdateRequested(CustomConfiguration configuration) {
-        return Build.VERSION.SDK_INT >= 36
-                && "true".equalsIgnoreCase(configuration.get("mipush.live_update", "false"));
+        return Build.VERSION.SDK_INT >= 36 && configuration.liveUpdateRequested(false);
     }
 
     private static boolean hasPromotableCharacteristics(Notification notification) {
