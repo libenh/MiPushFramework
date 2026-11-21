@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -182,7 +183,7 @@ private fun Main(startDestination: String, navContent: () -> NavGraphBuilder.() 
         ) {
             Column(Modifier.weight(1f)) {
                 DashboardHeader(navController)
-                NavHost(navController = navController, startDestination = startDestination, builder = navContent())
+                NavHost(navController = navController, startDestination = startDestination, modifier = Modifier.weight(1f), builder = navContent())
             }
             BottomNavigationBar(navController)
         }
