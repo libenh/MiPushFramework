@@ -37,6 +37,7 @@ public class CustomConfiguration {
     private static final String NOTIFICATION_GROUP = "notification_group";
     private static final String NOTIFICATION_BIGPIC_URI = "notification_bigPic_uri";
     private static final String FOCUS_PARAM = "miui.focus.param";
+    private static final String LIVE_UPDATE = "mipush.live_update";
 
     private Map<String, String> mExtra = new HashMap<>();
 
@@ -135,6 +136,11 @@ public class CustomConfiguration {
 
     public String focusParam(String defaultValue) {
         return get(FOCUS_PARAM, defaultValue);
+    }
+
+    public boolean liveUpdateRequested(boolean defaultValue) {
+        String value = get(LIVE_UPDATE, Boolean.toString(defaultValue));
+        return Boolean.parseBoolean(value == null ? null : value.trim());
     }
 
     public String textIcon(String defaultValue) {
