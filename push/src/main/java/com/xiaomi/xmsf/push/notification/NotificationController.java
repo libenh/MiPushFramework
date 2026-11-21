@@ -36,6 +36,7 @@ import com.xiaomi.xmsf.R;
 import com.xiaomi.xmsf.push.utils.Configurations;
 import com.xiaomi.xmsf.push.utils.IconConfigurations;
 import com.xiaomi.xmsf.utils.ColorUtil;
+import com.xiaomi.xmsf.utils.ConfigCenter;
 
 import top.trumeet.common.utils.CustomConfiguration;
 import top.trumeet.common.utils.ImgUtils;
@@ -140,7 +141,7 @@ public class NotificationController {
         processIcon(context, packageName, notificationBuilder);
 
         CustomConfiguration configuration = XMPushUtils.getConfiguration(metaInfo);
-        boolean liveUpdateRequested = isLiveUpdateRequested(configuration);
+        boolean liveUpdateRequested = isLiveUpdateRequested(context, configuration);
         if (liveUpdateRequested) {
             // ColorOS 16/17 Fluid Cloud follows Android's promoted ongoing notification contract.
             // Keep one stable notification identity: repeated MiPush updates replace this entry,
@@ -213,8 +214,11 @@ public class NotificationController {
      * promoted into an ongoing activity. The stable notificationId supplied to publish() is the
      * activity identity; publishing again updates it and cancel() ends it.
      */
-    private static boolean isLiveUpdateRequested(CustomConfiguration configuration) {
-        return Build.VERSION.SDK_INT >= 36 && configuration.liveUpdateRequested(false);
+    private static boolean isLiveUpdateRequested(Context context, CustomConfiguration configuration) {
+        // Global user switch is a master gate; individual pushes must still explicitly opt in.
+        return Build.VERSION.SDK_INT >= 36
+                && ConfigCenter.getSharedPreferences(context).getBoolean("FluidCloudEnabled", false)
+                && configuration.liveUpdateRequested(false);
     }
 
     private static boolean hasPromotableCharacteristics(Notification notification) {
