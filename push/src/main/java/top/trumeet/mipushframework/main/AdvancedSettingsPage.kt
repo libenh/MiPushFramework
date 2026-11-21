@@ -67,6 +67,7 @@ private fun SettingsApp() {
 private fun SettingsScreen() {
     Column {
         CleanUpBlock()
+        FluidCloudBlock()
         ExperimentalBlock()
         ConfigurationsBlock()
     }
@@ -111,6 +112,20 @@ fun ConfigurationsBlock() {
             key = "AccessMode",
             values = stringArrayResource(R.array.pref_title_access_mode_list_titles),
             defaultValue = "0"
+        )
+    }
+}
+
+@Composable
+private fun FluidCloudBlock() {
+    val context = LocalContext.current
+    val preferences = ConfigCenter.getSharedPreferences(context)
+    SettingsGroup(title = stringResource(R.string.settings_fluid_cloud)) {
+        SettingsItem(
+            title = stringResource(R.string.settings_fluid_cloud_enabled),
+            summary = stringResource(R.string.settings_fluid_cloud_summary),
+            key = "FluidCloudEnabled",
+            defaultValue = false
         )
     }
 }
