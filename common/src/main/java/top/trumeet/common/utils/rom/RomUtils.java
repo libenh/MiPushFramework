@@ -21,6 +21,8 @@ public class RomUtils {
     public static final int ROM_CYANOGEN_MOD = 3;
     // LineageOS
     public static final int ROM_LINEAGE_OS = 4;
+    // OPPO / realme UI / OxygenOS 系列
+    public static final int ROM_OPLUS = 5;
     // 未知（没有这个 case）
     public static final int ROM_UNKNOWN = -1;
 
@@ -30,7 +32,8 @@ public class RomUtils {
             ROM_MIUI,
             ROM_H2OS,
             ROM_CYANOGEN_MOD,
-            ROM_LINEAGE_OS
+            ROM_LINEAGE_OS,
+            ROM_OPLUS
     })
     @RestrictTo(RestrictTo.Scope.LIBRARY)
     private @interface RomType {
@@ -47,6 +50,9 @@ public class RomUtils {
         }
         if (new H2OSChecker().check()) {
             return ROM_H2OS;
+        }
+        if (new OplusChecker().check()) {
+            return ROM_OPLUS;
         }
         if (new CyanogenModChecker().check()) {
             return ROM_CYANOGEN_MOD;
