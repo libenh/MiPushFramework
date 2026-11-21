@@ -33,6 +33,7 @@ import com.xiaomi.xmsf.utils.LogUtils;
 import top.trumeet.common.Constants;
 import top.trumeet.common.push.PushServiceAccessibility;
 import top.trumeet.common.utils.Utils;
+import top.trumeet.common.utils.rom.RomUtils;
 import top.trumeet.mipush.provider.DatabaseUtils;
 
 
@@ -107,6 +108,7 @@ public class MiPushFrameworkApp extends Application {
         LogUtils.init(this);
         logger = XLog.tag(MiPushFrameworkApp.class.getSimpleName()).build();
         logger.i("App starts: " + BuildConfig.VERSION_NAME);
+        logger.i("Detected ROM type: " + RomUtils.getOs());
     }
 
     private void notifyDozeWhiteListRequest(NotificationManagerCompat manager) {
