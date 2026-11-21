@@ -77,6 +77,7 @@ class ApplicationInfoPage : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applyOplusWindowStyle()
         init(getRegisteredApplication()!!)
         setContent { SettingsApp() }
     }
