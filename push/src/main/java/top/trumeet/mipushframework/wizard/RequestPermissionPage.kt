@@ -57,9 +57,6 @@ class RequestPermissionPage : ComponentActivity() {
         applyOplusWindowStyle()
         setContent {
             Theme {
-                window.navigationBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    NavigationBarDefaults.Elevation
-                ).toArgb()
                 PermissionMainPage()
             }
         }
