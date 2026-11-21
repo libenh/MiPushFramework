@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -48,11 +49,12 @@ import top.trumeet.mipushframework.wizard.permission.PermissionInfo
 import top.trumeet.mipushframework.wizard.permission.RequestIgnoreBatteryOptimizationsPermissionInfo
 import top.trumeet.mipushframework.wizard.permission.UsageStatsPermissionInfo
 import top.trumeet.ui.theme.Theme
+import top.trumeet.mipushframework.utils.applyOplusWindowStyle
 
 class RequestPermissionPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        applyOplusWindowStyle()
         setContent {
             Theme {
                 window.navigationBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
@@ -85,6 +87,7 @@ fun PermissionMainPage(
 
     Column(
         modifier = modifier
+            .statusBarsPadding()
             .navigationBarsPadding()
             .fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween,
