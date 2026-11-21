@@ -12,10 +12,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Surface
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,38 +43,23 @@ fun SettingsItem(
     onClick: () -> Unit
 ) {
     Row(
-        Modifier
+        Modifier.fillMaxWidth()
             .clickable(onClick = onClick, enabled = enabled)
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 5.dp)
-            .heightIn(min = 58.dp)
-            .alpha(if (enabled) 1f else 0.5f),
+            .heightIn(min = if (summary.isNullOrEmpty()) 58.dp else 72.dp)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .alpha(if (enabled) 1f else 0.48f),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ItemInfo(title, summary, modifier = Modifier.weight(9f))
+        ItemInfo(title, summary, modifier = Modifier.weight(1f))
         content?.let { it() }
     }
 }
 
 @Composable
-fun SettingsItem(
-    title: String,
-    summary: String,
-    key: String,
-    values: Array<String>,
-    defaultValue: String
-) {
-    var shouldShowDialog by remember { mutableStateOf(false) }
-    SettingsItem(
-        title = title,
-        summary = summary,
-        confirmButton = {},
-        content = {
-            ItemLists(key, defaultValue, values) {
-                shouldShowDialog = false
-            }
-        }
-    )
+fun SettingsItem(title: String, summary: String, key: String, values: Array<String>, defaultValue: String) {
+    SettingsItem(title = title, summary = summary, confirmButton = {}, content = {
+        ItemLists(key, defaultValue, values) {}
+    })
 }
 
 @Composable
@@ -87,24 +71,16 @@ fun SettingsItem(
     content: @Composable (dismiss: () -> Unit) -> Unit
 ) {
     var shouldShowDialog by remember { mutableStateOf(false) }
-    SettingsItem(
-        title = title,
-        summary = summary,
-        content = {
-            val hideDialog = {
-                shouldShowDialog = false
-                onDismiss?.invoke()
-                Unit
-            }
-            SettingsDialog(title, shouldShowDialog, hideDialog, {
-                confirmButton(hideDialog)
-            }) {
-                content(hideDialog)
-            }
+    SettingsItem(title = title, summary = summary, content = {
+        val hideDialog = {
+            shouldShowDialog = false
+            onDismiss?.invoke()
+            Unit
         }
-    ) {
-        shouldShowDialog = true
-    }
+        SettingsDialog(title, shouldShowDialog, hideDialog, { confirmButton(hideDialog) }) {
+            content(hideDialog)
+        }
+    }) { shouldShowDialog = true }
 }
 
 @Composable
@@ -119,40 +95,30 @@ fun SettingsDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = confirmButton,
-        title = { Text(title) },
-        text = content
+        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+        text = content,
+        shape = MaterialTheme.shapes.large,
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
 @Composable
-private fun ItemLists(
-    key: String,
-    defaultValue: String,
-    values: Array<String>,
-    onDismiss: () -> Unit
-) {
+private fun ItemLists(key: String, defaultValue: String, values: Array<String>, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val preferences = ConfigCenter.getSharedPreferences(context)
     val selected = preferences.getString(key, defaultValue)!!.toInt()
-
     LazyColumn {
         itemsIndexed(values) { index, item ->
             Row(
-                Modifier
-                    .clickable {
-                        preferences
-                            .edit()
-                            .putString(key, index.toString())
-                            .apply()
-                        onDismiss()
-                    }
-                    .fillMaxWidth()
-                    .padding(top = 10.dp, bottom = 10.dp),
+                Modifier.fillMaxWidth().clickable {
+                    preferences.edit().putString(key, index.toString()).apply()
+                    onDismiss()
+                }.padding(vertical = 12.dp, horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(index == selected, onClick = null)
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(text = item)
+                Spacer(Modifier.width(8.dp))
+                Text(item, style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
@@ -160,25 +126,21 @@ private fun ItemLists(
 
 @Composable
 fun SettingsGroup(title: String, content: @Composable () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 9.dp)
-    ) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp)) {
         Text(
             title,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(start = 5.dp, bottom = 9.dp)
         )
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(22.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f)
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 2.dp,
+            shadowElevation = 1.dp
         ) {
-            Column(Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) {
-                content()
-            }
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) { content() }
         }
     }
 }
@@ -203,31 +165,18 @@ fun SettingsItem(
 }
 
 @Composable
-fun SettingsItem(
-    title: String,
-    summary: String? = null,
-    enabled: Boolean = true,
-    checked: Boolean,
-    onClick: () -> Unit
-) {
-    SettingsItem(
-        title, summary, content = {
-            Switch(
-                checked = checked,
-                onCheckedChange = null,
-                modifier = Modifier.scale(0.7f)
-            )
-        }, enabled = enabled,
-        onClick = onClick
-    )
+fun SettingsItem(title: String, summary: String? = null, enabled: Boolean = true, checked: Boolean, onClick: () -> Unit) {
+    SettingsItem(title, summary, content = {
+        Switch(checked = checked, onCheckedChange = null, modifier = Modifier.scale(0.82f))
+    }, enabled = enabled, onClick = onClick)
 }
 
 @Composable
 fun ItemInfo(title: String, summary: String?, modifier: Modifier = Modifier) {
-    Column(modifier.padding(start = 10.dp, end = 10.dp)) {
-        Text(title, style = MaterialTheme.typography.bodyLarge)
-        summary?.let {
-            Text(it, style = MaterialTheme.typography.bodyMedium)
+    Column(modifier.padding(start = 10.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)) {
+        Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+        summary?.takeIf { it.isNotBlank() }?.let {
+            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 3.dp))
         }
     }
 }
@@ -235,35 +184,19 @@ fun ItemInfo(title: String, summary: String?, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun InfoDialogPreview() {
-    SettingsDialog(
-        title = stringResource(R.string.pref_title_access_mode),
-        shouldShowDialog = true,
-        {}, {}
-    ) {
-        ItemLists(
-            "AccessMode",
-            "0",
-            stringArrayResource(R.array.pref_title_access_mode_list_titles)
-        ) { }
+    SettingsDialog(title = stringResource(R.string.pref_title_access_mode), shouldShowDialog = true, {}, {}) {
+        ItemLists("AccessMode", "0", stringArrayResource(R.array.pref_title_access_mode_list_titles)) {}
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun SettingsItemPreview() {
-    SettingsItem(
-        title = stringResource(R.string.settings_start_foreground_service),
-        summary = stringResource(R.string.settings_start_foreground_service_summary),
-        key = "StartForegroundService",
-        defaultValue = false,
-        enabled = false
-    )
+    SettingsItem(title = stringResource(R.string.settings_start_foreground_service), summary = stringResource(R.string.settings_start_foreground_service_summary), key = "StartForegroundService", defaultValue = false, enabled = false)
 }
 
 @Preview(showBackground = true)
 @Composable
 fun SingleLineSettingsItemPreview() {
-    SettingsItem(
-        title = stringResource(R.string.settings_start_foreground_service)
-    ) {}
+    SettingsItem(title = stringResource(R.string.settings_start_foreground_service)) {}
 }
