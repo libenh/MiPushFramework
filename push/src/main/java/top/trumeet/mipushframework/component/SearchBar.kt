@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -72,14 +73,12 @@ fun SearchBar(placeholder: String, onValueChange: (String) -> Unit) {
 @Composable
 private fun debounce(onValueChange: (String) -> Unit): (String) -> Unit {
     val scope = rememberCoroutineScope()
-    var job: Job? = null
-    val change: (String) -> Unit = {
-        scope.launch {
-            job?.cancel()
-            job = launch {
-                delay(300)
-                onValueChange(it)
-            }
+    var job by remember { mutableStateOf<Job?>(null) }
+    val change: (String) -> Unit = { value ->
+        job?.cancel()
+        job = scope.launch {
+            delay(300)
+            onValueChange(value)
         }
     }
     return change
