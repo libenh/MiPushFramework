@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
@@ -45,8 +47,8 @@ fun SettingsItem(
         Modifier
             .clickable(onClick = onClick, enabled = enabled)
             .fillMaxWidth()
-            .padding(5.dp)
-            .heightIn(min = 40.dp)
+            .padding(horizontal = 8.dp, vertical = 5.dp)
+            .heightIn(min = 58.dp)
             .alpha(if (enabled) 1f else 0.5f),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -161,10 +163,23 @@ fun SettingsGroup(title: String, content: @Composable () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(10.dp)
+            .padding(horizontal = 16.dp, vertical = 9.dp)
     ) {
-        Text(title, style = MaterialTheme.typography.labelLarge)
-        content()
+        Text(
+            title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 5.dp, bottom = 9.dp)
+        )
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(22.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f)
+        ) {
+            Column(Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) {
+                content()
+            }
+        }
     }
 }
 
