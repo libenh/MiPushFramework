@@ -5,6 +5,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: mipushframework-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -60,7 +64,7 @@ jobs:
           APK=$(find push/build/outputs/apk/normal/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
           test -n "$APK"
           VERSION="${{ steps.version.outputs.describe }}"
-          OUTPUT="MiPushFramework-${VERSION}.apk"
+          OUTPUT="${VERSION}.apk"
           cp "$APK" "$OUTPUT"
           echo "file=$OUTPUT" >> "$GITHUB_OUTPUT"
 
@@ -69,6 +73,7 @@ jobs:
         with:
           name: MiPushFramework
           path: ${{ steps.apk.outputs.file }}
+          retention-days: 7
 
       - name: Publish prerelease
         uses: softprops/action-gh-release@v2
