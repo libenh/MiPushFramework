@@ -68,7 +68,7 @@
     - 最主要的区别在于消息的传递方式不同，推送服务 105 版本使用 startService，108 以上版本使用 bindService
     - 目前建议优先使用 normal 版本，若有问题再切换为 105 版本
     - 对于 MIUI ROM，使用 normal 版本的另一个好处是，应用不会在重启系统后变回官方版本
-    - 建议 COS 使用 vc105 版本，目前发现 COS 系统无法使用 Bind 方式传递消息，因无测试机无法排查原因
+    - ColorOS 等 OPlus 系 ROM 若出现消息无法回传，优先尝试 vc105 版本。vc105 使用 startService 传递消息，normal 使用 bindService；目前已知 COS 存在 Bind 传递异常的情况，其他 OPlus ROM 仍需实机验证
 
 
 - 是否支持分身（999）应用？
