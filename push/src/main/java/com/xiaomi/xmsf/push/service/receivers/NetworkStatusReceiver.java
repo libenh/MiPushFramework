@@ -28,13 +28,15 @@ public class NetworkStatusReceiver extends BroadcastReceiver {
             // ColorOS/realme UI may reject a background service start under
             // vendor power policy. Still notify the transport and registration
             // layers so they can recover when the service is already alive.
-            MyLog.e("Unable to start XMPushService after network change", e);
+            MyLog.w("Unable to start XMPushService after network change");
+            MyLog.e(e);
         }
 
         try {
             TrafficUtils.notifyNetworkChanage(context);
         } catch (RuntimeException e) {
-            MyLog.e("Unable to notify MiPush traffic monitor", e);
+            MyLog.w("Unable to notify MiPush traffic monitor");
+            MyLog.e(e);
         }
 
         try {
@@ -43,7 +45,8 @@ public class NetworkStatusReceiver extends BroadcastReceiver {
                 client.processRegisterTask();
             }
         } catch (RuntimeException e) {
-            MyLog.e("Unable to schedule MiPush registration after network change", e);
+            MyLog.w("Unable to schedule MiPush registration after network change");
+            MyLog.e(e);
         }
     }
 }
