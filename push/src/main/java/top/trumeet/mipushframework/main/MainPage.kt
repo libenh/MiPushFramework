@@ -46,6 +46,7 @@ import top.trumeet.mipushframework.main.subpage.EventListPreview
 import top.trumeet.mipushframework.main.subpage.Settings
 import top.trumeet.mipushframework.main.subpage.SettingsPagePreview
 import top.trumeet.ui.theme.Theme
+import top.trumeet.mipushframework.utils.applyOplusWindowStyle
 
 private val mainPageUtils1 = MainPageUtils()
 private var placeholder by mutableStateOf("Search...")
@@ -54,14 +55,9 @@ class MainPage : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        applyOplusWindowStyle()
         mainPageUtils1.initOnCreate(applicationContext) { placeholder = it.toString() }
         setContent {
-            Theme {
-                window.navigationBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                    NavigationBarDefaults.Elevation
-                ).toArgb()
-            }
             Main(Screen.Apps.route.toString()) {
                 {
                     composable(Screen.Events.route.toString()) {
