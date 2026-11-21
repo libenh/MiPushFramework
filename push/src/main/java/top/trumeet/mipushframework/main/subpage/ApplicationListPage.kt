@@ -2,6 +2,9 @@ package top.trumeet.mipushframework.main.subpage
 
 import android.content.Context
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -149,6 +152,10 @@ private fun ApplicationItem(item: RegisteredApplication) {
 
     Row(
         Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 5.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f))
             .clickable {
                 EventListPageUtils.startManagePermissions(
                     context,
@@ -156,11 +163,11 @@ private fun ApplicationItem(item: RegisteredApplication) {
                     true
                 )
             }
-            .padding(10.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AppIcon(item.packageName, item.appName, Modifier.size(48.dp))
-        Spacer(Modifier.width(20.dp))
+        Spacer(Modifier.width(14.dp))
         Column {
             AppInfo(item)
             LastReceive(item)
