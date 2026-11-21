@@ -149,7 +149,6 @@ public class NotificationController {
                     .setOngoing(true)
                     .setAutoCancel(false)
                     .setOnlyAlertOnce(true)
-                    .setCategory(Notification.CATEGORY_PROGRESS)
                     .setGroup(null)
                     .setGroupSummary(false);
         }
@@ -185,12 +184,24 @@ public class NotificationController {
         if (!liveUpdateRequested) {
             notificationBuilder.setAutoCancel(true);
         }
+        if (liveUpdateRequested) {
+            // Notification.Builder#setRequestPromotedOngoing is API 36.1; write its
+            // documented Bundle extra to keep this project compatible with compileSdk 33.
+            Bundle promotedExtras = new Bundle();
+            promotedExtras.putBoolean("android.requestPromotedOngoing", true);
+            notificationBuilder.addExtras(promotedExtras);
+        }
+
         Notification notification = notificationBuilder.build();
-        if (liveUpdateRequested && isEligibleForLiveUpdate(notification)) {
-            // EXTRA_REQUEST_PROMOTED_ONGOING is API 36+. Use the platform key so this
-            // project can retain its current compileSdk while C17/API 37 handles promotion.
-            notification.extras.putBoolean("android.requestPromotedOngoing", true);
-            notification.extras.putBoolean("mipush.live_update", true);
+        if (liveUpdateRequested) {
+            // Ask the platform itself to validate the notification's style, title,
+            // ongoing flag, grouping and custom-view constraints before keeping the request.
+            if (hasPromotableCharacteristics(notification)) {
+                notification.extras.putBoolean("mipush.live_update", true);
+            } else {
+                notification.extras.putBoolean("android.requestPromotedOngoing", false);
+                notification.extras.remove("mipush.live_update");
+            }
         }
         getNotificationManagerEx().notify(
                 packageName, getNotificationTag(packageName), notificationId, notification);
@@ -207,27 +218,21 @@ public class NotificationController {
                 && "true".equalsIgnoreCase(configuration.get("mipush.live_update", "false"));
     }
 
-    private static boolean isEligibleForLiveUpdate(Notification notification) {
-        if (notification == null || notification.extras == null) {
+    private static boolean hasPromotableCharacteristics(Notification notification) {
+        if (notification == null || Build.VERSION.SDK_INT < 36) {
             return false;
         }
-        if ((notification.flags & Notification.FLAG_ONGOING_EVENT) == 0
-                || (notification.flags & Notification.FLAG_GROUP_SUMMARY) != 0
-                || notification.contentView != null
-                || notification.bigContentView != null
-                || notification.headsUpContentView != null) {
+        try {
+            // Notification.hasPromotableCharacteristics() is public from API 36.
+            // Reflection avoids raising this legacy project's compileSdk requirement.
+            Object result = Notification.class
+                    .getMethod("hasPromotableCharacteristics")
+                    .invoke(notification);
+            return Boolean.TRUE.equals(result);
+        } catch (Exception ignored) {
+            // Fail closed: do not request promotion when the platform cannot validate it.
             return false;
         }
-        CharSequence title = notification.extras.getCharSequence(Notification.EXTRA_TITLE);
-        if (TextUtils.isEmpty(title)) {
-            return false;
-        }
-        String template = notification.extras.getString("android.template");
-        return TextUtils.isEmpty(template)
-                || template.contains("BigTextStyle")
-                || template.contains("ProgressStyle")
-                || template.contains("CallStyle")
-                || template.contains("MetricStyle");
     }
 
     @Nullable
