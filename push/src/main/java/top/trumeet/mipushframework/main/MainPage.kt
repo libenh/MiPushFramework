@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -96,7 +97,12 @@ fun BottomNavigationBar(navController: NavController) {
         Screen.Events, Screen.Apps, Screen.Settings
     )
 
-    NavigationBar(Modifier.height(56.dp)) {
+    NavigationBar(
+        modifier = Modifier.height(76.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        tonalElevation = 4.dp
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
@@ -104,6 +110,7 @@ fun BottomNavigationBar(navController: NavController) {
             val name = stringResource(screen.route)
             NavigationBarItem(
                 icon = { Icon(painterResource(id = screen.icon), contentDescription = name) },
+                label = { androidx.compose.material3.Text(name, style = MaterialTheme.typography.labelMedium) },
                 selected = currentRoute == screen.route.toString(),
                 onClick = {
                     navController.navigate(screen.route.toString()) {
@@ -130,7 +137,8 @@ private fun Main(
             Modifier
                 .statusBarsPadding()
                 .navigationBarsPadding()
-                .fillMaxSize(),
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(Modifier.weight(1f)) {
