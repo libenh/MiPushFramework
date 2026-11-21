@@ -8,9 +8,15 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
@@ -29,16 +35,21 @@ import com.google.android.material.elevation.SurfaceColors
 import com.xiaomi.xmsf.R
 import top.trumeet.mipushframework.component.MarkdownView
 import top.trumeet.ui.theme.Theme
+import top.trumeet.mipushframework.utils.applyOplusWindowStyle
 import java.io.InputStreamReader
 
 class HelpPage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applyOplusWindowStyle()
         setContent {
-            val color = SurfaceColors.SURFACE_2.getColor(this)
-            window.statusBarColor = color
             Theme {
-                HelpList()
+                HelpList(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .navigationBarsPadding()
+                )
             }
         }
     }
@@ -112,9 +123,9 @@ private fun ContactUs() {
 private fun Group(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.headlineSmall,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.padding(16.dp)
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 18.dp, top = 18.dp, bottom = 8.dp)
     )
 }
 
@@ -127,10 +138,12 @@ private fun ClickableListItem(textResourceId: Int, onClick: () -> Unit) {
 private fun ClickableListItem(item: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
-            .clickable(onClick = onClick)
-            .padding(16.dp)
-            .padding(start = 24.dp)
             .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 16.dp)
     ) {
         Text(
             text = item,
