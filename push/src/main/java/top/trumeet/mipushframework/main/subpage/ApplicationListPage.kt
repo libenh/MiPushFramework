@@ -180,7 +180,8 @@ private fun LastReceive(item: RegisteredApplication) {
     val info = g_itemsInfo[item.packageName]!!
     Text(
         info.lastReceiveTime,
-        style = MaterialTheme.typography.bodyLarge,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
 
@@ -190,12 +191,12 @@ private fun AppInfo(item: RegisteredApplication) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(
             item.appName,
-            style = MaterialTheme.typography.bodyLarge,
-            color = info.registrationState.second
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             info.registrationState.first,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.labelMedium,
             color = info.registrationState.second
         )
     }
