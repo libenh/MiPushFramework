@@ -2,6 +2,9 @@ package top.trumeet.mipushframework.main.subpage
 
 import android.content.Context
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -235,12 +238,17 @@ private fun EventItem(item: EventInfoForDisplay, onClick: (EventInfoForDisplay) 
     val alpha = if (disabled) 0.5f else 1f
     Row(
         Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 5.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f))
             .clickable { onClick(item) }
-            .padding(10.dp).alpha(alpha),
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+            .alpha(alpha),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AppIcon(item.packageName, item.appName, modifier = Modifier.size(48.dp))
-        Spacer(Modifier.width(20.dp))
+        Spacer(Modifier.width(14.dp))
         Column {
             Row {
                 ConfigOptions(item)
@@ -257,21 +265,21 @@ private fun EventItem(item: EventInfoForDisplay, onClick: (EventInfoForDisplay) 
 @Composable
 private fun ConfigOptions(item: EventInfoForDisplay) {
     if (item.configOptions.isNotEmpty()) {
-        Text(item.configOptions.toString(), style = MaterialTheme.typography.bodySmall)
+        Text(item.configOptions.toString(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.width(5.dp))
     }
 }
 
 @Composable
 private fun ChannelInfo(item: EventInfoForDisplay) {
-    Text(item.channel, style = MaterialTheme.typography.bodySmall)
+    Text(item.channel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 
 @Composable
 private fun EventReceiveDate(item: EventInfoForDisplay) {
     val format = receiveDateFormat
-    Text(format.format(item.receiveDate), style = MaterialTheme.typography.bodySmall)
+    Text(format.format(item.receiveDate), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable
