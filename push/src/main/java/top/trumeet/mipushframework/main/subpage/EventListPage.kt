@@ -286,7 +286,8 @@ private fun EventReceiveDate(item: EventInfoForDisplay) {
 private fun EventTitle(item: EventInfoForDisplay) {
     Text(
         item.title,
-        style = MaterialTheme.typography.bodyLarge,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onSurface
     )
 }
 
@@ -295,6 +296,7 @@ private fun EventContent(item: EventInfoForDisplay) {
     Text(
         item.content,
         style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
 
