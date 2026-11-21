@@ -41,6 +41,7 @@ import top.trumeet.mipushframework.utils.applyOplusWindowStyle
 class AdvancedSettingsPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applyOplusWindowStyle()
         setContent { SettingsApp() }
     }
 }
