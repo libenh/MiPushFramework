@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import com.xiaomi.channel.commonutils.logger.MyLog;
 import com.xiaomi.channel.commonutils.network.Network;
 import com.xiaomi.mipush.sdk.PushServiceClient;
+import com.xiaomi.xmsf.push.control.NetworkRegistrationThrottle;
 import com.xiaomi.push.service.XMPushService;
 import com.xiaomi.smack.util.TrafficUtils;
 
@@ -42,7 +43,11 @@ public class NetworkStatusReceiver extends BroadcastReceiver {
         try {
             PushServiceClient client = PushServiceClient.getInstance(context);
             if (Network.hasNetwork(context) && client.isProvisioned()) {
-                client.processRegisterTask();
+                if (NetworkRegistrationThrottle.shouldThrottle()) {
+                    MyLog.i("Skip duplicate MiPush registration task after recent network change");
+                } else {
+                    client.processRegisterTask();
+                }
             }
         } catch (RuntimeException e) {
             MyLog.w("Unable to schedule MiPush registration after network change");
