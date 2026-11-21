@@ -20,6 +20,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -180,7 +181,12 @@ private fun EventDetailsDialog(
             }
         },
         text = {
-            TextView(json)
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+            ) {
+                TextView(json, modifier = Modifier.padding(12.dp))
+            }
         },
         modifier = Modifier.heightIn(Dp.Unspecified, targetHeight)
     )
