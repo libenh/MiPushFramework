@@ -34,8 +34,8 @@
     <string name="activity_rom_keepalive">Your device may intercept the operations of the push service, please add the "Push" application to whitelists (such as battery optimization, wake-up interception, etc.) in relevant settings of your ROM. You can also try to open the system\'s \"Recent Tasks\" interface and Lock this interface to keep the Push service running in the background.</string>
     <string name="see_pass_though_msg">Forwarded message, check it by opening the app.</string>
 
-    <string name="notification_registerAllowed">Allowed "%1$s" register to MiPush</string>
-    <string name="notification_registerRejected">Rejected "%1$s" register to MiPush</string>
+    <string name="notification_registerAllowed">Allowed "%1$s" to register with O Push</string>
+    <string name="notification_registerRejected">Rejected "%1$s" from registering with O Push</string>
 
     <string name="settings_clear">Clean up</string>
 
@@ -101,7 +101,7 @@
 
     <!-- Preference -->
     <string name="preference_title">Push Config</string>
-    <string name="main_overview">Overview</string>
+    <string name="main_overview">O System overview</string>
     <string name="main_event">Push records</string>
     <string name="main_apps">Apps</string>
     <string name="main_settings">Settings</string>
@@ -111,7 +111,7 @@
     <string name="action_about">About</string>
 
     <!-- Wizard -->
-    <string name="wizard_descr"><![CDATA[This project allows any devices to use XiaoMi system-level Push, it can control notifications from other apps to save more battery. For more details, visit the GitHub project:<a href="https://github.com/MiPushFramework/MiPushFramework">MiPushFramework</a>]]></string>
+    <string name="wizard_descr"><![CDATA[O Push Framework provides a compatible system-level push service for realme UI and ColorOS devices. For more details, visit the GitHub project:<a href="https://github.com/MiPushFramework/MiPushFramework">MiPushFramework</a>]]></string>
 
     <string name="wizard_connect">Connecting</string>
 
@@ -234,12 +234,12 @@ Please grant the <b>Run in the background or wake up</b> permissions.
     <string name="request_battery_whitelist">Push app needs to be added to the \"Battery Optimization\" whitelist to run properly.</string>
 
     <string name="status_app_not_registered">not registered</string>
-    <string name="footer_app_ignored_not_registered">%1$s apps without MiPush SDK</string>
+    <string name="footer_app_ignored_not_registered">%1$s apps without a compatible push SDK</string>
     <string name="status_app_not_registered_detail_without_fake_suggest"><![CDATA[
-Registration is determined and initiated by the application and generally begins automatically when the application is launched. Some apps are only registered when finding a XiaoMi devices. See also: <b><a href="https://github.com/MiPushFramework/MiPushFramework/wiki/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BC%8F%E6%B3%A8%E5%86%8C%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">应用程式注册问题解决方案</a></b> and <b><a href="https://github.com/MiPushFramework/MiPushFramework/wiki/%5B%E5%B8%AE%E5%8A%A9%5D-%E5%BA%94%E7%94%A8%E6%B3%A8%E5%86%8C%E9%97%AE%E9%A2%98">[帮助] 应用注册问题</a></b>.
+Registration is determined and initiated by the application and generally begins automatically when the application is launched. Some apps only start registration when a supported system environment is detected. Check the app startup and push initialization flow on O-series devices. See also: <b><a href="https://github.com/MiPushFramework/MiPushFramework/wiki/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BC%8F%E6%B3%A8%E5%86%8C%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">应用程式注册问题解决方案</a></b> and <b><a href="https://github.com/MiPushFramework/MiPushFramework/wiki/%5B%E5%B8%AE%E5%8A%A9%5D-%E5%BA%94%E7%94%A8%E6%B3%A8%E5%86%8C%E9%97%AE%E9%A2%98">[帮助] 应用注册问题</a></b>.
     ]]></string>
     <string name="status_app_not_registered_detail_with_fake_suggest"><![CDATA[
-Registration is determined and initiated by the application and generally begins automatically when the application is launched. Some apps are only registered when finding a XiaoMi devices, you can try <b><a href="https://github.com/Magisk-Modules-Repo/MiPushFake">Magisk global-level module</a></b> or <b><a href="https://github.com/TimothyZhang023/Riru-MiPushFake">Magisk apps-level module</a></b> to increase success. See also: <b><a href="https://github.com/MiPushFramework/MiPushFramework/wiki/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BC%8F%E6%B3%A8%E5%86%8C%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">应用程式注册问题解决方案</a></b> and <b><a href="https://github.com/MiPushFramework/MiPushFramework/wiki/%5B%E5%B8%AE%E5%8A%A9%5D-%E5%BA%94%E7%94%A8%E6%B3%A8%E5%86%8C%E9%97%AE%E9%A2%98">[帮助] 应用注册问题</a></b>.
+Registration is determined and initiated by the application and generally begins automatically when the application is launched. Some apps only start registration when a supported system environment is detected. On O-series devices, this requires the corresponding compatibility adaptation; avoid applying unrelated system spoofing modules. See also: <b><a href="https://github.com/MiPushFramework/MiPushFramework/wiki/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BC%8F%E6%B3%A8%E5%86%8C%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">应用程式注册问题解决方案</a></b> and <b><a href="https://github.com/MiPushFramework/MiPushFramework/wiki/%5B%E5%B8%AE%E5%8A%A9%5D-%E5%BA%94%E7%94%A8%E6%B3%A8%E5%86%8C%E9%97%AE%E9%A2%98">[帮助] 应用注册问题</a></b>.
     ]]></string>
     <string name="status_app_not_registered_title">Unregistered</string>
 
