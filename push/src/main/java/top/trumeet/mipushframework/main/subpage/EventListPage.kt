@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.DialogProperties
 import com.elvishew.xlog.XLog
 import com.xiaomi.xmsf.R
@@ -255,8 +256,8 @@ private fun EventItem(item: EventInfoForDisplay, onClick: (EventInfoForDisplay) 
     ) {
         AppIcon(item.packageName, item.appName, modifier = Modifier.size(48.dp))
         Spacer(Modifier.width(14.dp))
-        Column {
-            Row {
+        Column(Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 ConfigOptions(item)
                 ChannelInfo(item)
                 Spacer(Modifier.weight(1f))
@@ -285,7 +286,12 @@ private fun ChannelInfo(item: EventInfoForDisplay) {
 @Composable
 private fun EventReceiveDate(item: EventInfoForDisplay) {
     val format = receiveDateFormat
-    Text(format.format(item.receiveDate), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(
+        format.format(item.receiveDate),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1
+    )
 }
 
 @Composable
@@ -293,7 +299,9 @@ private fun EventTitle(item: EventInfoForDisplay) {
     Text(
         item.title,
         style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.onSurface
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
     )
 }
 
@@ -302,7 +310,9 @@ private fun EventContent(item: EventInfoForDisplay) {
     Text(
         item.content,
         style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
     )
 }
 
