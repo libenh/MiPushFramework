@@ -45,12 +45,18 @@ fun SettingsItem(
 ) {
     Row(
         Modifier.fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
             .clickable(onClick = onClick, enabled = enabled)
-            .heightIn(min = if (summary.isNullOrEmpty()) 58.dp else 72.dp)
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .heightIn(min = if (summary.isNullOrEmpty()) 62.dp else 78.dp)
+            .padding(horizontal = 12.dp, vertical = 5.dp)
             .alpha(if (enabled) 1f else 0.48f),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Surface(
+            modifier = Modifier.width(4.dp).heightIn(min = 28.dp),
+            shape = RoundedCornerShape(50),
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.72f)
+        ) {}
         ItemInfo(title, summary, modifier = Modifier.weight(1f))
         content?.let { it() }
     }
@@ -140,21 +146,30 @@ private fun ItemLists(key: String, defaultValue: String, values: Array<String>, 
 
 @Composable
 fun SettingsGroup(title: String, content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp)) {
-        Text(
-            title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 5.dp, bottom = 9.dp)
-        )
+    Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp)) {
+        Row(
+            Modifier.fillMaxWidth().padding(start = 3.dp, end = 3.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(Modifier.width(10.dp))
+            Surface(
+                modifier = Modifier.weight(1f).height(1.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)
+            ) {}
+        }
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
+            shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 2.dp,
+            tonalElevation = 1.dp,
             shadowElevation = 1.dp
         ) {
-            Column(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) { content() }
+            Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) { content() }
         }
     }
 }
@@ -187,10 +202,16 @@ fun SettingsItem(title: String, summary: String? = null, enabled: Boolean = true
 
 @Composable
 fun ItemInfo(title: String, summary: String?, modifier: Modifier = Modifier) {
-    Column(modifier.padding(start = 10.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)) {
-        Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+    Column(modifier.padding(start = 12.dp, end = 12.dp, top = 9.dp, bottom = 9.dp)) {
+        Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
         summary?.takeIf { it.isNotBlank() }?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 3.dp))
+            Text(
+                it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+                maxLines = 2
+            )
         }
     }
 }
