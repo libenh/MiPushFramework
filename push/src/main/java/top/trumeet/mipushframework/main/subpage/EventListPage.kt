@@ -265,7 +265,7 @@ private fun EventItem(item: EventInfoForDisplay, onClick: (EventInfoForDisplay) 
         }
         Divider(
             modifier = Modifier.padding(start = 81.dp),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f),
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.16f),
             thickness = 0.6.dp
         )
     }
