@@ -45,7 +45,7 @@ import top.trumeet.mipushframework.utils.applyOplusWindowStyle
 import top.trumeet.ui.theme.Theme
 
 private val mainPageUtils = MainPageUtils()
-private var placeholder by mutableStateOf("搜索应用或推送事件")
+private var placeholder by mutableStateOf("搜索应用或推送记录")
 
 class MainPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,6 +94,7 @@ private sealed class Screen(val route: Int, val icon: Int) {
     object Settings : Screen(R.string.main_settings, R.drawable.ic_settings_black_24dp)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Main(startDestination: String, navContent: () -> NavGraphBuilder.() -> Unit) {
     val navController = rememberNavController()
@@ -144,7 +145,7 @@ private fun MainTopBar(navController: NavController) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
             },
-            colors = TopAppBarDefaults.topAppBarColors(
+            colors = TopAppBarDefaults.smallTopAppBarColors(
                 containerColor = MaterialTheme.colorScheme.surface
             )
         )
