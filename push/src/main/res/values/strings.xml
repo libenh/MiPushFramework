@@ -101,6 +101,7 @@
 
     <!-- Preference -->
     <string name="preference_title">Push Config</string>
+    <string name="main_overview">Overview</string>
     <string name="main_event">Logs</string>
     <string name="main_apps">Apps</string>
     <string name="main_settings">Configs</string>
