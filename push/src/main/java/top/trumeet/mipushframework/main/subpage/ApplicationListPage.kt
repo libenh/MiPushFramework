@@ -196,6 +196,11 @@ private fun AppInfo(item: RegisteredApplication) {
     val context = LocalContext.current
     val info = g_itemsInfo[item.packageName]
         ?: AppInfoForDisplay(RegistrationStateStyle.contentOf(item, context), "")
+    val stateColor = if (info.registrationState.second == Color.Unspecified) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        info.registrationState.second
+    }
     Row(
         Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -212,13 +217,13 @@ private fun AppInfo(item: RegisteredApplication) {
         Spacer(Modifier.width(8.dp))
         Surface(
             shape = RoundedCornerShape(50),
-            color = info.registrationState.second.copy(alpha = 0.13f)
+            color = stateColor.copy(alpha = 0.13f)
         ) {
             Text(
                 info.registrationState.first,
                 modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
                 style = MaterialTheme.typography.labelSmall,
-                color = info.registrationState.second,
+                color = stateColor,
                 maxLines = 1
             )
         }
