@@ -136,39 +136,55 @@ private fun DashboardHeader(navController: NavController) {
         else -> Screen.Apps
     }
     val title = stringResource(screen.route)
-    Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp)) {
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 22.dp, vertical = 16.dp)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
-                shape = RoundedCornerShape(15.dp),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(42.dp)
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(44.dp)
             ) {
                 Icon(
                     painterResource(R.drawable.ic_apps_black_24dp),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.padding(10.dp)
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(11.dp)
                 )
             }
-            Column(Modifier.padding(start = 12.dp)) {
-                Text("MiPush Framework", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+            Column(Modifier.padding(start = 12.dp).weight(1f)) {
+                Text(
+                    "MiPush Framework",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
-            Spacer(Modifier.weight(1f))
-            Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.primaryContainer) {
-                Text("O 系适配", modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = MaterialTheme.colorScheme.secondaryContainer
+            ) {
+                Text(
+                    "O 系适配",
+                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 7.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
             }
         }
-        Surface(
-            modifier = Modifier.fillMaxWidth().padding(top = 14.dp),
-            shape = RoundedCornerShape(22.dp),
-            color = MaterialTheme.colorScheme.primaryContainer
-        ) {
-            Column(Modifier.padding(horizontal = 18.dp, vertical = 15.dp)) {
-                Text(title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                Text(screen.subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f), modifier = Modifier.padding(top = 3.dp))
-            }
-        }
+        Text(
+            screen.subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 56.dp, top = 7.dp)
+        )
     }
 }
 
