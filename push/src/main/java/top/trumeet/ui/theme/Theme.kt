@@ -68,7 +68,6 @@ fun Theme(
         colorScheme = colorScheme,
         typography = Typography,
         shapes = androidx.compose.material3.Shapes(
-            extraSmall = RoundedCornerShape(8.dp),
             small = RoundedCornerShape(13.dp),
             medium = RoundedCornerShape(19.dp),
             large = RoundedCornerShape(27.dp)
