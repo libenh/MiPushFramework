@@ -40,28 +40,37 @@ fun SearchBar(placeholder: String, onValueChange: (String) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     val ph by rememberUpdatedState(placeholder)
     val debounceOnValueChange: (String) -> Unit = debounce(onValueChange)
-    val change: (String) -> Unit = { query = it; debounceOnValueChange(it) }
+    val change: (String) -> Unit = {
+        query = it
+        debounceOnValueChange(it)
+    }
 
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp),
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp,
+        shadowElevation = 1.dp
     ) {
         TextField(
             value = query,
             onValueChange = change,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(ph, style = MaterialTheme.typography.bodyMedium) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+            leadingIcon = {
+                Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            },
             trailingIcon = {
                 if (query.isNotEmpty()) {
-                    IconButton({ change("") }) { Icon(Icons.Default.Clear, contentDescription = "Clear") }
+                    IconButton({ change("") }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+                    }
                 }
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(22.dp),
             colors = TextFieldDefaults.textFieldColors(
                 containerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
