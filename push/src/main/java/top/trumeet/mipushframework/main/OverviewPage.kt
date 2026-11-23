@@ -61,7 +61,7 @@ internal fun Overview(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text("运行概览", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
-            Text("MiPush Framework · O 系适配", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("O Push · realme UI / ColorOS", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
         Surface(
@@ -75,7 +75,7 @@ internal fun Overview(
                     Column(Modifier.weight(1f)) {
                         Text("应用接入统计", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            stats?.let { value -> "当前识别到 " + value.total + " 个 MiPush 应用" } ?: "正在读取应用数据…",
+                            stats?.let { value -> "当前识别到 " + value.total + " 个接入应用" } ?: "正在读取应用数据…",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
