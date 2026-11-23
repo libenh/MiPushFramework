@@ -21,7 +21,7 @@
     <string name="notification_group_config">Config</string>
     <string name="notification_category_alive">Push Status</string>
     <string name="notification_category_warning">Warning</string>
-    <string name="notification_alive">Mi Push running</string>
+    <string name="notification_alive">O Push running</string>
 
     <string name="notification_group_applications">Applications</string>
 
@@ -86,12 +86,12 @@
     <string name="settings_debug_mode">Enable debug mode</string>
     <string name="settings_debug_mode_summary">Display the debug button in the notification, print full log</string>
     <string name="settings_show_all_events">Display all events</string>
-    <string name="settings_start_foreground_service">Keep MiPush alive</string>
+    <string name="settings_start_foreground_service">Keep O Push running</string>
     <string name="settings_start_foreground_service_summary">show a foreground notification to keep alive, you can hide it by disable notification channel</string>
 
 
 
-    <string name="app_name">MiPush Framework</string>
+    <string name="app_name">O Push Framework</string>
 
     <string name="enable">Enable</string>
     <string name="fail">Fail</string>
@@ -102,9 +102,9 @@
     <!-- Preference -->
     <string name="preference_title">Push Config</string>
     <string name="main_overview">Overview</string>
-    <string name="main_event">Logs</string>
+    <string name="main_event">Push records</string>
     <string name="main_apps">Apps</string>
-    <string name="main_settings">Configs</string>
+    <string name="main_settings">Settings</string>
 
 
     <!-- About -->
@@ -287,8 +287,15 @@ This could be the application doing a reverse registration, or the registration 
 
 
 
-    <string name="settings_fluid_cloud">Fluid Cloud</string>
-    <string name="settings_fluid_cloud_enabled">Enable Fluid Cloud integration</string>
-    <string name="settings_fluid_cloud_summary">Allow eligible ongoing notifications explicitly marked by push configuration to request platform promotion. Android 16+ only; ordinary chat notifications are not promoted.</string>
+    <string name="settings_fluid_cloud">O System Integration</string>
+    <string name="settings_fluid_cloud_enabled">Enable O system ongoing-notification integration (experimental)</string>
+    <string name="settings_fluid_cloud_summary">Only eligible ongoing notifications explicitly marked by push configuration can request platform promotion. This is not a complete Fluid Cloud implementation.</string>
 
+    <string name="o_settings_service">O 系推送服务</string>
+    <string name="o_settings_adaptation">O 系系统适配</string>
+    <string name="o_settings_notifications">通知与诊断</string>
+    <string name="o_settings_maintenance">维护工具</string>
+    <string name="o_continuous_enabled">O 系持续通知适配（实验）</string>
+    <string name="o_continuous_summary">仅允许符合条件且明确标记的持续通知请求系统提升；不是完整的流体云/胶囊实现。</string>
+    <string name="o_register_requested">已提交应用重新注册请求</string>
 </resources>
