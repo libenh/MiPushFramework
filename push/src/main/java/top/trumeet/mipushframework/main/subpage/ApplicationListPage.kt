@@ -152,27 +152,26 @@ private fun Footer(notUseMiPushCount: Int) {
 private fun ApplicationItem(item: RegisteredApplication) {
     val context = LocalContext.current
 
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 5.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f))
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 5.dp)
             .clickable {
-                EventListPageUtils.startManagePermissions(
-                    context,
-                    item.packageName,
-                    true
-                )
-            }
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+                EventListPageUtils.startManagePermissions(context, item.packageName, true)
+            },
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp,
+        shadowElevation = 1.dp
     ) {
-        AppIcon(item.packageName, item.appName, Modifier.size(48.dp))
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            AppInfo(item)
-            LastReceive(item)
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 13.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AppIcon(item.packageName, item.appName, Modifier.size(50.dp))
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                AppInfo(item)
+                LastReceive(item)
+            }
         }
     }
 }
