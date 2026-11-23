@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,9 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,11 +34,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -46,23 +49,19 @@ import com.xiaomi.xmsf.R
 import top.trumeet.mipushframework.MainPageUtils
 import top.trumeet.mipushframework.component.SearchBar
 import top.trumeet.mipushframework.main.subpage.ApplicationList
-import top.trumeet.mipushframework.main.subpage.ApplicationListPreview
-import top.trumeet.mipushframework.main.subpage.EventDetailsDialogPreview
 import top.trumeet.mipushframework.main.subpage.EventList
-import top.trumeet.mipushframework.main.subpage.EventListPreview
 import top.trumeet.mipushframework.main.subpage.Settings
-import top.trumeet.mipushframework.main.subpage.SettingsPagePreview
 import top.trumeet.mipushframework.utils.applyOplusWindowStyle
 import top.trumeet.ui.theme.Theme
 
-private val mainPageUtils1 = MainPageUtils()
-private var placeholder by mutableStateOf("Search...")
+private val mainPageUtils = MainPageUtils()
+private var placeholder by mutableStateOf("搜索应用或推送事件")
 
 class MainPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         applyOplusWindowStyle()
-        mainPageUtils1.initOnCreate(applicationContext) { placeholder = it.toString() }
+        mainPageUtils.initOnCreate(applicationContext) { placeholder = it.toString() }
         setContent {
             Main(Screen.Apps.route.toString()) {
                 {
@@ -87,10 +86,90 @@ class MainPage : ComponentActivity() {
     }
 }
 
-private sealed class Screen(val route: Int, val icon: Int, val subtitle: String) {
-    object Events : Screen(R.string.main_event, R.drawable.ic_event_note_black_24dp, "Recent delivery activity")
-    object Apps : Screen(R.string.main_apps, R.drawable.ic_apps_black_24dp, "Manage app registration and delivery")
-    object Settings : Screen(R.string.main_settings, R.drawable.ic_settings_black_24dp, "Service, diagnostics and preferences")
+private sealed class Screen(val route: Int, val icon: Int, val subtitle: String, val eyebrow: String) {
+    object Events : Screen(R.string.main_event, R.drawable.ic_event_note_black_24dp, "查看推送到达记录、状态与消息详情", "DELIVERY MONITOR")
+    object Apps : Screen(R.string.main_apps, R.drawable.ic_apps_black_24dp, "管理应用注册状态与推送接入情况", "APP MANAGEMENT")
+    object Settings : Screen(R.string.main_settings, R.drawable.ic_settings_black_24dp, "服务配置、运行诊断与个性化选项", "SYSTEM PREFERENCES")
+}
+
+@Composable
+private fun BrandBar() {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 15.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(
+            modifier = Modifier.size(42.dp),
+            shape = RoundedCornerShape(15.dp),
+            color = MaterialTheme.colorScheme.primary
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_notifications_black_24dp),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(23.dp)
+                )
+            }
+        }
+        Column(Modifier.padding(start = 12.dp).weight(1f)) {
+            Text("MiPush Framework", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text("PUSH CONTROL CENTER", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer) {
+            Text(
+                "O 系适配",
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
+}
+
+@Composable
+private fun DashboardHeader(navController: NavController) {
+    val entry by navController.currentBackStackEntryAsState()
+    val route = entry?.destination?.route
+    val screen = when (route) {
+        Screen.Events.route.toString() -> Screen.Events
+        Screen.Settings.route.toString() -> Screen.Settings
+        else -> Screen.Apps
+    }
+    val title = stringResource(screen.route)
+
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 5.dp)
+            .height(158.dp).clip(RoundedCornerShape(28.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primary,
+                        Color(0xFF394E9C),
+                        Color(0xFF286E82)
+                    )
+                )
+            )
+    ) {
+        Box(
+            Modifier.align(Alignment.TopEnd).offset(x = 30.dp, y = (-42).dp)
+                .size(178.dp).border(1.dp, Color.White.copy(alpha = 0.18f), CircleShape)
+        )
+        Box(
+            Modifier.align(Alignment.BottomEnd).offset(x = 24.dp, y = 55.dp)
+                .size(130.dp).border(1.dp, Color.White.copy(alpha = 0.14f), CircleShape)
+        )
+        Column(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp, vertical = 19.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(screen.eyebrow, style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.78f))
+            Column {
+                Text(title, style = MaterialTheme.typography.headlineLarge, color = Color.White)
+                Text(screen.subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.86f), modifier = Modifier.padding(top = 5.dp))
+            }
+        }
+    }
 }
 
 @Composable
@@ -98,19 +177,26 @@ fun BottomNavigationBar(navController: NavController) {
     val items = listOf(Screen.Events, Screen.Apps, Screen.Settings)
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 10.dp
+        shadowElevation = 12.dp,
+        modifier = Modifier.navigationBarsPadding()
     ) {
         NavigationBar(
-            modifier = Modifier.height(76.dp),
+            modifier = Modifier.height(72.dp),
             containerColor = MaterialTheme.colorScheme.surface,
             tonalElevation = 0.dp
         ) {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
+            val entry by navController.currentBackStackEntryAsState()
+            val currentRoute = entry?.destination?.route
             items.forEach { screen ->
                 val name = stringResource(screen.route)
                 NavigationBarItem(
-                    icon = { Icon(painterResource(screen.icon), contentDescription = name, modifier = Modifier.size(22.dp)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(screen.icon),
+                            contentDescription = name,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    },
                     label = { Text(name, style = MaterialTheme.typography.labelMedium) },
                     selected = currentRoute == screen.route.toString(),
                     onClick = {
@@ -127,140 +213,21 @@ fun BottomNavigationBar(navController: NavController) {
 }
 
 @Composable
-private fun DashboardHeader(navController: NavController) {
-    val entry by navController.currentBackStackEntryAsState()
-    val route = entry?.destination?.route
-    val screen = when (route) {
-        Screen.Events.route.toString() -> Screen.Events
-        Screen.Settings.route.toString() -> Screen.Settings
-        else -> Screen.Apps
-    }
-    val title = stringResource(screen.route)
-
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 22.dp, vertical = 16.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(44.dp)
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_apps_black_24dp),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(11.dp)
-                )
-            }
-            Column(Modifier.padding(start = 12.dp).weight(1f)) {
-                Text(
-                    "MiPush Framework",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            Surface(
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.secondaryContainer
-            ) {
-                Text(
-                    "O 系适配",
-                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 7.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
-        }
-        Text(
-            screen.subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 56.dp, top = 7.dp)
-        )
-    }
-}
-
-@Composable
 private fun Main(startDestination: String, navContent: () -> NavGraphBuilder.() -> Unit) {
     val navController = rememberNavController()
     Theme {
         Column(
-            Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding().navigationBarsPadding(),
-            verticalArrangement = Arrangement.SpaceBetween
+            Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding()
         ) {
-            Column(Modifier.weight(1f)) {
-                DashboardHeader(navController)
-                NavHost(navController = navController, startDestination = startDestination, modifier = Modifier.weight(1f), builder = navContent())
-            }
+            BrandBar()
+            DashboardHeader(navController)
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                modifier = Modifier.weight(1f),
+                builder = navContent()
+            )
             BottomNavigationBar(navController)
-        }
-    }
-}
-
-@Preview(showBackground = true, device = Devices.PIXEL_3)
-@Composable
-private fun MainEventsPreview() {
-    Main(Screen.Events.route.toString()) {
-        {
-            composable(Screen.Events.route.toString()) {
-                Column {
-                    val onValueChange: (String) -> Unit = {}
-                    SearchBar(placeholder, onValueChange)
-                    EventListPreview()
-                }
-            }
-            composable(Screen.Apps.route.toString()) { }
-            composable(Screen.Settings.route.toString()) { }
-        }
-    }
-}
-
-@Preview(showBackground = true, device = Devices.PIXEL_3)
-@Composable
-private fun MainAppsPreview() {
-    Main(Screen.Apps.route.toString()) {
-        {
-            composable(Screen.Events.route.toString()) { }
-            composable(Screen.Apps.route.toString()) {
-                Column {
-                    val onValueChange: (String) -> Unit = {}
-                    SearchBar(placeholder, onValueChange)
-                    ApplicationListPreview()
-                }
-            }
-            composable(Screen.Settings.route.toString()) { }
-        }
-    }
-}
-
-@Preview(showBackground = true, device = Devices.PIXEL_3)
-@Composable
-private fun MainSettingsPreview() {
-    Main(Screen.Settings.route.toString()) {
-        {
-            composable(Screen.Events.route.toString()) { }
-            composable(Screen.Apps.route.toString()) { }
-            composable(Screen.Settings.route.toString()) { SettingsPagePreview() }
-        }
-    }
-}
-
-@Preview(showBackground = true, device = Devices.PIXEL_3)
-@Composable
-private fun MainDialogPreview() {
-    Main(Screen.Events.route.toString()) {
-        {
-            composable(Screen.Events.route.toString()) { EventDetailsDialogPreview() }
-            composable(Screen.Apps.route.toString()) { }
-            composable(Screen.Settings.route.toString()) { }
         }
     }
 }
