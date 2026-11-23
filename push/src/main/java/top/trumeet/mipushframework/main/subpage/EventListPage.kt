@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -243,21 +244,14 @@ fun EventList(
 private fun EventItem(item: EventInfoForDisplay, onClick: (EventInfoForDisplay) -> Unit) {
     val disabled = item.configOptions.contains("disable")
     val alpha = if (disabled) 0.5f else 1f
-    Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 5.dp)
-            .clickable { onClick(item) }
-            .alpha(alpha),
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
-        shadowElevation = 1.dp
-    ) {
+    Column(Modifier.fillMaxWidth().alpha(alpha)) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 13.dp),
+            Modifier.fillMaxWidth().clickable { onClick(item) }
+                .padding(horizontal = 20.dp, vertical = 13.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AppIcon(item.packageName, item.appName, modifier = Modifier.size(50.dp))
-            Spacer(Modifier.width(14.dp))
+            AppIcon(item.packageName, item.appName, modifier = Modifier.size(46.dp))
+            Spacer(Modifier.width(15.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     ConfigOptions(item)
@@ -269,6 +263,11 @@ private fun EventItem(item: EventInfoForDisplay, onClick: (EventInfoForDisplay) 
                 EventContent(item)
             }
         }
+        Divider(
+            modifier = Modifier.padding(start = 81.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f),
+            thickness = 0.6.dp
+        )
     }
 }
 
