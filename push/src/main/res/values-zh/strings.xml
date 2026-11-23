@@ -38,7 +38,7 @@
     <string name="notification_category_alive">Push 状态</string>
     <string name="notification_category_warning">警告</string>
 
-    <string name="notification_alive">推送服务运行中</string>
+    <string name="notification_alive">O 系推送服务运行中</string>
 
     <string name="notification_group_applications">应用程序</string>
     <string name="notification_stats_permission_title">请授予“使用情况”权限</string>
@@ -81,7 +81,7 @@
     <string name="settings_debug_mode">启用调试模式</string>
     <string name="settings_debug_mode_summary">通知中展示调试按钮，打印完整日志</string>
     <string name="settings_show_all_events">事件列表中展示所有事件</string>
-    <string name="settings_start_foreground_service">推送服务保活</string>
+    <string name="settings_start_foreground_service">保持 O 系推送服务运行</string>
     <string name="settings_start_foreground_service_summary">显示一个前台通知来保活推送服务，可以通过禁用相应通知渠道来隐藏该通知</string>
 
     <string name="settings_icebox_permission">开启冰箱(IceBox)自动解冻支持</string>
@@ -94,7 +94,7 @@
     <string name="icebox_permission_not_granted">未赋权冰箱自动解冻</string>
 
     <string name="settings_icebox_not_installed">冰箱尚未安装，暂不支持</string>
-    <string name="app_name">推送服务</string>
+    <string name="app_name">O 系推送框架</string>
     <string name="enable">启用</string>
     <string name="fail">失败</string>
     <string name="apply">应用</string>
@@ -103,7 +103,7 @@
     <string name="retry">重试</string>
     <string name="exit">退出</string>
     <string name="preference_title">推送设置</string>
-    <string name="main_event">记录</string>
+    <string name="main_event">推送记录</string>
 
     <!-- Message when change enable status -->
     <string name="main_apps">应用</string>
@@ -167,7 +167,7 @@
     <string name="register_type_deny">阻止注册</string>
     <string name="register_type_ask">询问（默认）</string>
     <string name="settings_enhance">增强</string>
-    <string name="settings_service_setting">服务配置</string>
+    <string name="settings_service_setting">O 系推送服务</string>
     <string name="settings_service_advance_setting">高级配置</string>
 
     <!-- Settings -->
@@ -268,8 +268,15 @@
 
 
 
-    <string name="settings_fluid_cloud">流体云</string>
-    <string name="settings_fluid_cloud_enabled">启用流体云适配</string>
-    <string name="settings_fluid_cloud_summary">允许符合条件且由推送配置明确标记的持续通知请求系统提升。仅 Android 16 及以上系统有效；不会把普通聊天通知强制变成流体云。</string>
+    <string name="settings_fluid_cloud">O 系持续通知适配</string>
+    <string name="settings_fluid_cloud_enabled">启用 O 系持续通知适配（实验）</string>
+    <string name="settings_fluid_cloud_summary">仅允许符合条件且明确标记的持续通知请求系统提升；不是完整的流体云或胶囊实现。</string>
 
+    <string name="o_settings_service">O 系推送服务</string>
+    <string name="o_settings_adaptation">O 系系统适配</string>
+    <string name="o_settings_notifications">通知与诊断</string>
+    <string name="o_settings_maintenance">维护工具</string>
+    <string name="o_continuous_enabled">O 系持续通知适配（实验）</string>
+    <string name="o_continuous_summary">仅允许符合条件且明确标记的持续通知请求系统提升；这不是完整的流体云或胶囊实现。</string>
+    <string name="o_register_requested">已提交应用重新注册请求</string>
 </resources>
