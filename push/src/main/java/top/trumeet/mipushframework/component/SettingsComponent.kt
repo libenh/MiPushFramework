@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,16 +51,11 @@ fun SettingsItem(
         Modifier.fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
             .clickable(onClick = onClick, enabled = enabled)
-            .heightIn(min = if (summary.isNullOrEmpty()) 62.dp else 78.dp)
-            .padding(horizontal = 12.dp, vertical = 5.dp)
+            .heightIn(min = if (summary.isNullOrEmpty()) 58.dp else 72.dp)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
             .alpha(if (enabled) 1f else 0.48f),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Surface(
-            modifier = Modifier.width(4.dp).heightIn(min = 28.dp),
-            shape = RoundedCornerShape(50),
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.72f)
-        ) {}
         ItemInfo(title, summary, modifier = Modifier.weight(1f))
         content?.let { it() }
     }
@@ -149,9 +145,13 @@ private fun ItemLists(key: String, defaultValue: String, values: Array<String>, 
 
 @Composable
 fun SettingsGroup(title: String, content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp)) {
+    var expanded by rememberSaveable(title) { mutableStateOf(true) }
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 7.dp)) {
         Row(
-            Modifier.fillMaxWidth().padding(start = 3.dp, end = 3.dp, bottom = 10.dp),
+            Modifier.fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 5.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -159,20 +159,22 @@ fun SettingsGroup(title: String, content: @Composable () -> Unit) {
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(Modifier.width(10.dp))
-            Surface(
-                modifier = Modifier.weight(1f).height(1.dp),
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)
-            ) {}
+            Spacer(Modifier.weight(1f))
+            Text(
+                if (expanded) "⌃" else "⌄",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 1.dp,
-            shadowElevation = 1.dp
-        ) {
-            Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) { content() }
+        if (expanded) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 1.dp
+            ) {
+                Column(Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) { content() }
+            }
         }
     }
 }
