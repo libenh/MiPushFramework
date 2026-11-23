@@ -2,7 +2,25 @@ name: Test CI
 
 on:
   push:
+    branches: [master]
+    paths:
+      - 'push/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/test_ci.yml'
   pull_request:
+    branches: [master]
+    paths:
+      - 'push/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/test_ci.yml'
   workflow_dispatch:
 
 concurrency:
