@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -34,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import com.elvishew.xlog.XLog
 import com.xiaomi.xmsf.R
 import kotlinx.coroutines.Dispatchers
@@ -168,7 +170,7 @@ private fun ApplicationItem(item: RegisteredApplication) {
     ) {
         AppIcon(item.packageName, item.appName, Modifier.size(48.dp))
         Spacer(Modifier.width(14.dp))
-        Column {
+        Column(Modifier.weight(1f)) {
             AppInfo(item)
             LastReceive(item)
         }
@@ -177,28 +179,49 @@ private fun ApplicationItem(item: RegisteredApplication) {
 
 @Composable
 private fun LastReceive(item: RegisteredApplication) {
-    val info = g_itemsInfo[item.packageName]!!
-    Text(
-        info.lastReceiveTime,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
+    val info = g_itemsInfo[item.packageName] ?: return
+    if (info.lastReceiveTime.isNotBlank()) {
+        Text(
+            info.lastReceiveTime,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }
 
 @Composable
 private fun AppInfo(item: RegisteredApplication) {
-    val info = g_itemsInfo[item.packageName]!!
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    val context = LocalContext.current
+    val info = g_itemsInfo[item.packageName]
+        ?: AppInfoForDisplay(RegistrationStateStyle.contentOf(item, context), "")
+    Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Text(
             item.appName,
+            modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
-        Text(
-            info.registrationState.first,
-            style = MaterialTheme.typography.labelMedium,
-            color = info.registrationState.second
-        )
+        Spacer(Modifier.width(8.dp))
+        Surface(
+            shape = RoundedCornerShape(50),
+            color = info.registrationState.second.copy(alpha = 0.13f)
+        ) {
+            Text(
+                info.registrationState.first,
+                modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = info.registrationState.second,
+                maxLines = 1
+            )
+        }
     }
 }
 
