@@ -63,8 +63,15 @@ class MainPage : ComponentActivity() {
         applyOplusWindowStyle()
         mainPageUtils.initOnCreate(applicationContext) { placeholder = it.toString() }
         setContent {
-            Main(Screen.Apps.route.toString()) {
+            Main(Screen.Overview.route.toString()) {
                 {
+                    composable(Screen.Overview.route.toString()) {
+                        Overview(
+                            onOpenApps = { navigateTo(Screen.Apps.route.toString()) },
+                            onOpenEvents = { navigateTo(Screen.Events.route.toString()) },
+                            onOpenSettings = { navigateTo(Screen.Settings.route.toString()) }
+                        )
+                    }
                     composable(Screen.Events.route.toString()) {
                         Column {
                             var query by rememberSaveable { mutableStateOf("") }
@@ -84,9 +91,19 @@ class MainPage : ComponentActivity() {
             }
         }
     }
+
+    private fun navigateTo(route: String) {
+        // Navigation is performed by the NavHost callbacks supplied below.
+        pendingNavigation = route
+    }
+
+    companion object {
+        internal var pendingNavigation by mutableStateOf<String?>(null)
+    }
 }
 
 private sealed class Screen(val route: Int, val icon: Int, val subtitle: String, val eyebrow: String) {
+    object Overview : Screen(R.string.main_overview, R.drawable.ic_notifications_black_24dp, "推送服务概况与常用入口", "PUSH OVERVIEW")
     object Events : Screen(R.string.main_event, R.drawable.ic_event_note_black_24dp, "查看推送到达记录、状态与消息详情", "DELIVERY MONITOR")
     object Apps : Screen(R.string.main_apps, R.drawable.ic_apps_black_24dp, "管理应用注册状态与推送接入情况", "APP MANAGEMENT")
     object Settings : Screen(R.string.main_settings, R.drawable.ic_settings_black_24dp, "服务配置、运行诊断与个性化选项", "SYSTEM PREFERENCES")
@@ -132,6 +149,7 @@ private fun DashboardHeader(navController: NavController) {
     val entry by navController.currentBackStackEntryAsState()
     val route = entry?.destination?.route
     val screen = when (route) {
+        Screen.Overview.route.toString() -> Screen.Overview
         Screen.Events.route.toString() -> Screen.Events
         Screen.Settings.route.toString() -> Screen.Settings
         else -> Screen.Apps
@@ -140,7 +158,7 @@ private fun DashboardHeader(navController: NavController) {
 
     Box(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 5.dp)
-            .height(158.dp).clip(RoundedCornerShape(28.dp))
+            .height(148.dp).clip(RoundedCornerShape(28.dp))
             .background(
                 Brush.linearGradient(
                     listOf(
@@ -160,7 +178,7 @@ private fun DashboardHeader(navController: NavController) {
                 .size(130.dp).border(1.dp, Color.White.copy(alpha = 0.14f), CircleShape)
         )
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp, vertical = 19.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp, vertical = 17.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(screen.eyebrow, style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.78f))
@@ -174,7 +192,7 @@ private fun DashboardHeader(navController: NavController) {
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
-    val items = listOf(Screen.Events, Screen.Apps, Screen.Settings)
+    val items = listOf(Screen.Overview, Screen.Apps, Screen.Events, Screen.Settings)
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 12.dp,
@@ -215,6 +233,14 @@ fun BottomNavigationBar(navController: NavController) {
 @Composable
 private fun Main(startDestination: String, navContent: () -> NavGraphBuilder.() -> Unit) {
     val navController = rememberNavController()
+    androidx.compose.runtime.LaunchedEffect(MainPage.pendingNavigation) {
+        val route = MainPage.pendingNavigation ?: return@LaunchedEffect
+        navController.navigate(route) {
+            launchSingleTop = true
+            restoreState = true
+        }
+        MainPage.pendingNavigation = null
+    }
     Theme {
         Column(
             Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding()
