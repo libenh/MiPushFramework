@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,9 +58,18 @@ fun SettingsItem(
 
 @Composable
 fun SettingsItem(title: String, summary: String, key: String, values: Array<String>, defaultValue: String) {
-    SettingsItem(title = title, summary = summary, confirmButton = {}, content = {
-        ItemLists(key, defaultValue, values) {}
-    })
+    SettingsItem(
+        title = title,
+        summary = summary,
+        confirmButton = { dismiss ->
+            TextButton(onClick = dismiss) {
+                Text(stringResource(android.R.string.ok))
+            }
+        },
+        content = { dismiss ->
+            ItemLists(key, defaultValue, values, dismiss)
+        }
+    )
 }
 
 @Composable
@@ -106,7 +116,11 @@ fun SettingsDialog(
 private fun ItemLists(key: String, defaultValue: String, values: Array<String>, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val preferences = ConfigCenter.getSharedPreferences(context)
-    val selected = preferences.getString(key, defaultValue)!!.toInt()
+    val selected = (
+        preferences.getString(key, defaultValue)?.toIntOrNull()
+            ?: defaultValue.toIntOrNull()
+            ?: 0
+        ).let { if (values.isEmpty()) -1 else it.coerceIn(values.indices) }
     LazyColumn {
         itemsIndexed(values) { index, item ->
             Row(
