@@ -243,28 +243,31 @@ fun EventList(
 private fun EventItem(item: EventInfoForDisplay, onClick: (EventInfoForDisplay) -> Unit) {
     val disabled = item.configOptions.contains("disable")
     val alpha = if (disabled) 0.5f else 1f
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 5.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f))
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 5.dp)
             .clickable { onClick(item) }
-            .padding(horizontal = 14.dp, vertical = 12.dp)
             .alpha(alpha),
-        verticalAlignment = Alignment.CenterVertically
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp,
+        shadowElevation = 1.dp
     ) {
-        AppIcon(item.packageName, item.appName, modifier = Modifier.size(48.dp))
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                ConfigOptions(item)
-                ChannelInfo(item)
-                Spacer(Modifier.weight(1f))
-                EventReceiveDate(item)
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 13.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AppIcon(item.packageName, item.appName, modifier = Modifier.size(50.dp))
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ConfigOptions(item)
+                    ChannelInfo(item)
+                    Spacer(Modifier.weight(1f))
+                    EventReceiveDate(item)
+                }
+                EventTitle(item)
+                EventContent(item)
             }
-            EventTitle(item)
-            EventContent(item)
         }
     }
 }
