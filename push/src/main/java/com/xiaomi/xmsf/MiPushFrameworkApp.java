@@ -18,13 +18,16 @@ import androidx.core.app.NotificationChannelCompat;
 import androidx.core.app.NotificationChannelGroupCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.elvishew.xlog.XLog;
 import com.nihility.notification.NotificationManagerEx;
 import com.nihility.utils.Hooker;
+import com.nihility.utils.OPlusRom;
 import com.nihility.utils.PrivilegeElevator;
 import com.oasisfeng.condom.CondomOptions;
 import com.oasisfeng.condom.CondomProcess;
+import com.xiaomi.push.service.XMPushService;
 import com.xiaomi.xmsf.push.control.PushControllerUtils;
 import com.xiaomi.xmsf.push.control.XMOutbound;
 import com.xiaomi.xmsf.push.service.MiuiPushActivateService;
@@ -36,12 +39,13 @@ import top.trumeet.common.utils.Utils;
 import top.trumeet.common.utils.rom.RomUtils;
 import top.trumeet.mipush.provider.DatabaseUtils;
 
-
+/**
+ * C17：启动时尽可能拉起 XMPushService，并打印 O 系信息。
+ */
 public class MiPushFrameworkApp extends Application {
     private com.elvishew.xlog.Logger logger;
 
     private static final String MIPUSH_EXTRA = "mipush_extra";
-
 
     @Override
     public void attachBaseContext(Context context) {
@@ -64,13 +68,34 @@ public class MiPushFrameworkApp extends Application {
 
         NotificationManagerEx.init(getApplicationContext());
 
-
         installCondom();
 
+        // 强制开启推送相关组件
         PushControllerUtils.setAllEnable(true, this);
+
+        // C17：主进程尽早 startForegroundService
+        ensurePushServiceRunning();
 
         awakePushActivateServiceOnMainProc(PushControllerUtils.wrapContext(this));
         requestDozeWhiteList();
+    }
+
+    private void ensurePushServiceRunning() {
+        if (!isAppMainProc(this)) {
+            return;
+        }
+        try {
+            Intent i = new Intent(this, XMPushService.class);
+            ContextCompat.startForegroundService(this, i);
+            logger.i("ensurePushServiceRunning: started XMPushService");
+        } catch (Throwable t) {
+            logger.e("ensurePushServiceRunning failed: " + t.getMessage(), t);
+            try {
+                startService(new Intent(this, XMPushService.class));
+            } catch (Throwable t2) {
+                logger.e("fallback startService: " + t2.getMessage(), t2);
+            }
+        }
     }
 
     private void requestDozeWhiteList() {
@@ -85,30 +110,33 @@ public class MiPushFrameworkApp extends Application {
     }
 
     private void awakePushActivateServiceOnMainProc(Context context) {
-        if (isAppMainProc(this)) {
-            long currentTimeMillis = System.currentTimeMillis();
-            long elapsedMs = currentTimeMillis - getLastStartupTime();
-            int fiveMinutesMs = 300_000;
-            if (elapsedMs > fiveMinutesMs || elapsedMs < 0) {
-                setStartupTime(currentTimeMillis);
-                MiuiPushActivateService.awakePushActivateService(
-                        context, "com.xiaomi.xmsf.push.SCAN");
-            }
+        if (!isAppMainProc(this)) {
+            return;
+        }
+        long currentTimeMillis = System.currentTimeMillis();
+        long elapsedMs = currentTimeMillis - getLastStartupTime();
+        // O 系：缩短扫描间隔，提高注册机会
+        int intervalMs = OPlusRom.isOPlus() ? 60_000 : 300_000;
+        if (elapsedMs > intervalMs || elapsedMs < 0) {
+            setStartupTime(currentTimeMillis);
+            MiuiPushActivateService.awakePushActivateService(
+                    context, "com.xiaomi.xmsf.push.SCAN");
+            logger.i("awake SCAN intervalMs=" + intervalMs);
         }
     }
 
     private void installCondom() {
-        CondomOptions options = XMOutbound.create(this, TAG_CONDOM + "_PROCESS",
-                false);
+        CondomOptions options = XMOutbound.create(this, TAG_CONDOM + "_PROCESS", false);
         CondomProcess.installExceptDefaultProcess(this, options);
     }
-
 
     private void initBasicLogger() {
         LogUtils.init(this);
         logger = XLog.tag(MiPushFrameworkApp.class.getSimpleName()).build();
-        logger.i("App starts: " + BuildConfig.VERSION_NAME);
+        logger.i("App starts: " + BuildConfig.VERSION_NAME + " vc=" + BuildConfig.VERSION_CODE);
         logger.i("Detected ROM type: " + RomUtils.getOs());
+        logger.i("OPlus=" + OPlusRom.isOPlus() + " colorOs=" + OPlusRom.colorOsVersion()
+                + " sdk=" + Build.VERSION.SDK_INT);
     }
 
     private void notifyDozeWhiteListRequest(NotificationManagerCompat manager) {
@@ -116,8 +144,12 @@ public class MiPushFrameworkApp extends Application {
 
         Intent removeDozeActivityIntent = new Intent().setComponent(
                 new ComponentName(Constants.SERVICE_APP_NAME, Constants.REMOVE_DOZE_COMPONENT_NAME));
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                removeDozeActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                removeDozeActivityIntent, flags);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_WARN)
                 .setContentInfo(getString(R.string.wizard_title_doze_whitelist))
                 .setContentTitle(getString(R.string.wizard_title_doze_whitelist))
@@ -129,7 +161,7 @@ public class MiPushFrameworkApp extends Application {
                 .setShowWhen(true)
                 .setAutoCancel(true)
                 .build();
-        manager.notify(getClass().getSimpleName(), 100, notification);  // Use tag to avoid conflict with push notifications.
+        manager.notify(getClass().getSimpleName(), 100, notification);
     }
 
     private void createWarnChannel(NotificationManagerCompat manager) {
@@ -146,7 +178,6 @@ public class MiPushFrameworkApp extends Application {
         }
     }
 
-
     private long getLastStartupTime() {
         return getDefaultPreferences().getLong("xmsf_startup", 0);
     }
@@ -158,5 +189,4 @@ public class MiPushFrameworkApp extends Application {
     private SharedPreferences getDefaultPreferences() {
         return getSharedPreferences(MIPUSH_EXTRA, 0);
     }
-
 }

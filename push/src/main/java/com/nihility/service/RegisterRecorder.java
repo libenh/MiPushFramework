@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
 import com.nihility.Global;
+import com.nihility.utils.OPlusRom;
 import com.xiaomi.push.service.PushConstants;
 import com.xiaomi.xmsf.R;
 
@@ -19,6 +20,9 @@ import top.trumeet.mipush.provider.entities.Event;
 import top.trumeet.mipush.provider.event.type.RegistrationType;
 import top.trumeet.mipush.provider.entities.RegisteredApplication;
 
+/**
+ * 记录应用注册请求；C17 下加强日志便于排查「注册没反应」。
+ */
 public class RegisterRecorder {
     private final String TAG = RegisterRecorder.class.getSimpleName();
     private final Logger logger = XLog.tag(TAG).build();
@@ -36,11 +40,17 @@ public class RegisterRecorder {
 
             String pkg = intent.getStringExtra(Constants.EXTRA_MI_PUSH_PACKAGE);
             if (pkg == null) {
-                logger.e("Package name is NULL!");
+                // 兼容其他 extra 键
+                pkg = intent.getStringExtra("mipush_app_package");
+            }
+            if (pkg == null) {
+                logger.e("Package name is NULL! extras=" + intent.getExtras());
                 return;
             }
 
-            logger.d("onHandleIntent -> A application want to register push");
+            logger.i("REGISTER_REQUEST pkg=" + pkg
+                    + " action=" + intent.getAction()
+                    + " oplus=" + OPlusRom.isOPlus());
             showRegisterToastIfUserAllow(
                     RegisteredApplicationDb.registerApplication(pkg));
             saveRegisterAppRecord(pkg);
@@ -65,6 +75,10 @@ public class RegisterRecorder {
     }
 
     void showRegisterToastIfUserAllow(RegisteredApplication application) {
+        if (application == null) {
+            logger.w("RegisteredApplication is null after registerApplication");
+            return;
+        }
         if (canShowRegisterNotification(application)) {
             showRegisterNotification(application);
         } else {
@@ -73,7 +87,8 @@ public class RegisterRecorder {
     }
 
     void showRegisterNotification(RegisteredApplication application) {
-        CharSequence appName = Global.ApplicationNameCache().getAppName(context, application.getPackageName());
+        CharSequence appName = Global.ApplicationNameCache()
+                .getAppName(context, application.getPackageName());
         CharSequence usedString = context.getString(R.string.notification_registerAllowed, appName);
         Utils.makeText(context, usedString, Toast.LENGTH_SHORT);
     }
