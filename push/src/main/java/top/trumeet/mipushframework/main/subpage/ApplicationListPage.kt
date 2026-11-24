@@ -46,6 +46,9 @@ import top.trumeet.common.utils.Utils
 import top.trumeet.mipush.provider.entities.RegisteredApplication
 import top.trumeet.mipushframework.component.AppIcon
 import top.trumeet.mipushframework.component.RefreshableLazyColumn
+import top.trumeet.mipushframework.component.StyleMetric
+import top.trumeet.mipushframework.component.StylePanel
+import top.trumeet.mipushframework.component.StyleSectionTitle
 import top.trumeet.ui.theme.LocalUiStyle
 import top.trumeet.ui.theme.UiStyle
 import top.trumeet.mipushframework.component.iconCache
@@ -102,6 +105,9 @@ fun ApplicationList(
 
     Page {
         RefreshableLazyColumn(onRefresh, { false }, onRefresh, isNeedRefresh) {
+            item {
+                ApplicationListSummary(g_items)
+            }
             items(g_items.res, { it.packageName }) {
                 ApplicationItem(it)
             }
@@ -109,6 +115,36 @@ fun ApplicationList(
                 val notUseMiPushCount by remember { derivedStateOf { g_items.totalPkg - g_items.res.size } }
                 Footer(notUseMiPushCount)
             }
+        }
+    }
+}
+
+@Composable
+private fun ApplicationListSummary(applications: ApplicationPageOperation.MiPushApplications) {
+    val registered = applications.res.count {
+        it.registeredType == RegisteredApplication.RegisteredType.Registered
+    }
+    val waiting = applications.res.count {
+        it.registeredType == RegisteredApplication.RegisteredType.NotRegistered
+    }
+    val failed = applications.res.count {
+        it.registeredType == RegisteredApplication.RegisteredType.Unregistered
+    }
+    StylePanel {
+        StyleSectionTitle(
+            "应用接入",
+            "当前识别到 ${applications.res.size} 个应用，共扫描 ${applications.totalPkg} 个安装包"
+        )
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            StyleMetric("已注册", registered.toString(), Modifier.weight(1f),
+                MaterialTheme.colorScheme.primary)
+            StyleMetric("待注册", waiting.toString(), Modifier.weight(1f),
+                MaterialTheme.colorScheme.onSurfaceVariant)
+            StyleMetric("异常", failed.toString(), Modifier.weight(1f),
+                MaterialTheme.colorScheme.error)
         }
     }
 }

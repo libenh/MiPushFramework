@@ -55,6 +55,8 @@ import top.trumeet.mipush.provider.entities.Event
 import top.trumeet.mipush.provider.event.type.TypeFactory
 import top.trumeet.mipushframework.component.AppIcon
 import top.trumeet.mipushframework.component.RefreshableLazyColumn
+import top.trumeet.mipushframework.component.StylePanel
+import top.trumeet.mipushframework.component.StyleSectionTitle
 import top.trumeet.mipushframework.component.TextView
 import top.trumeet.ui.theme.LocalUiStyle
 import top.trumeet.ui.theme.UiStyle
@@ -236,9 +238,31 @@ fun EventList(
     val isNeedMore: (Int) -> Boolean = { it >= items.size - 10 }
 
     RefreshableLazyColumn(doRefresh, isNeedMore, doLoadMore, isNeedRefresh) {
+        item {
+            EventListSummary(items.size, query, packageName)
+        }
         items(items, { it.id }) {
             EventItem(it, onClick)
         }
+    }
+}
+
+@Composable
+private fun EventListSummary(loadedCount: Int, query: String, packageName: String) {
+    StylePanel {
+        StyleSectionTitle(
+            if (packageName.isNotEmpty()) "应用推送记录" else "推送事件流",
+            when {
+                query.isNotBlank() -> "当前筛选：$query"
+                packageName.isNotEmpty() -> "仅显示当前应用的事件"
+                else -> "按时间查看推送接收、注册与系统事件"
+            }
+        )
+        Text(
+            "$loadedCount 条已加载",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
