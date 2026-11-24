@@ -30,6 +30,7 @@ import com.xiaomi.xmsf.SettingUtils
 import top.trumeet.mipushframework.MainPageOperation
 import top.trumeet.mipushframework.component.SettingsGroup
 import top.trumeet.mipushframework.component.SettingsItem
+import top.trumeet.mipushframework.component.StylePageHeading
 import top.trumeet.mipushframework.main.HelpPage
 import top.trumeet.ui.theme.LocalUiStyle
 import top.trumeet.ui.theme.Theme
@@ -50,6 +51,7 @@ fun Settings(onUiStyleChange: (UiStyle) -> Unit = {}) {
 @Composable
 private fun SettingsScreen(onUiStyleChange: (UiStyle) -> Unit) {
     Column {
+        StylePageHeading("设置", "服务运行、系统适配与管理端偏好")
         AppearanceBlock(onUiStyleChange)
         ServiceBlock()
         OSystemBlock()
