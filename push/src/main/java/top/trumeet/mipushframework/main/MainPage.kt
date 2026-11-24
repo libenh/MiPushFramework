@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -183,7 +184,7 @@ private fun BottomNavigationBar(navController: NavController, isMiuix: Boolean) 
     val items = listOf(Screen.Overview, Screen.Apps, Screen.Events, Screen.Settings)
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = if (isMiuix) 8.dp else 3.dp,
+        shadowElevation = if (isMiuix) 0.dp else 3.dp,
         tonalElevation = if (isMiuix) 0.dp else 2.dp,
         modifier = Modifier.navigationBarsPadding()
     ) {
@@ -210,7 +211,18 @@ private fun BottomNavigationBar(navController: NavController, isMiuix: Boolean) 
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = if (isMiuix) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                        } else {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        }
+                    )
                 )
             }
         }
