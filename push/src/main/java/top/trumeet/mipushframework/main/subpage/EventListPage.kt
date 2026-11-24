@@ -56,6 +56,8 @@ import top.trumeet.mipush.provider.event.type.TypeFactory
 import top.trumeet.mipushframework.component.AppIcon
 import top.trumeet.mipushframework.component.RefreshableLazyColumn
 import top.trumeet.mipushframework.component.TextView
+import top.trumeet.ui.theme.LocalUiStyle
+import top.trumeet.ui.theme.UiStyle
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -243,31 +245,61 @@ fun EventList(
 @Composable
 private fun EventItem(item: EventInfoForDisplay, onClick: (EventInfoForDisplay) -> Unit) {
     val disabled = item.configOptions.contains("disable")
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
     val alpha = if (disabled) 0.5f else 1f
-    Column(Modifier.fillMaxWidth().alpha(alpha)) {
-        Row(
-            Modifier.fillMaxWidth().clickable { onClick(item) }
-                .padding(horizontal = 20.dp, vertical = 13.dp),
-            verticalAlignment = Alignment.CenterVertically
+    if (isMiuix) {
+        Surface(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .clickable { onClick(item) }
+                .alpha(alpha),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surface
         ) {
-            AppIcon(item.packageName, item.appName, modifier = Modifier.size(46.dp))
-            Spacer(Modifier.width(15.dp))
-            Column(Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    ConfigOptions(item)
-                    ChannelInfo(item)
-                    Spacer(Modifier.weight(1f))
-                    EventReceiveDate(item)
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AppIcon(item.packageName, item.appName, modifier = Modifier.size(46.dp))
+                Spacer(Modifier.width(13.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ConfigOptions(item)
+                        ChannelInfo(item)
+                        Spacer(Modifier.weight(1f))
+                        EventReceiveDate(item)
+                    }
+                    EventTitle(item)
+                    EventContent(item)
                 }
-                EventTitle(item)
-                EventContent(item)
             }
         }
-        Divider(
-            modifier = Modifier.padding(start = 81.dp),
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.16f),
-            thickness = 0.6.dp
-        )
+    } else {
+        Column(Modifier.fillMaxWidth().alpha(alpha)) {
+            Row(
+                Modifier.fillMaxWidth().clickable { onClick(item) }
+                    .padding(horizontal = 20.dp, vertical = 13.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AppIcon(item.packageName, item.appName, modifier = Modifier.size(46.dp))
+                Spacer(Modifier.width(15.dp))
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ConfigOptions(item)
+                        ChannelInfo(item)
+                        Spacer(Modifier.weight(1f))
+                        EventReceiveDate(item)
+                    }
+                    EventTitle(item)
+                    EventContent(item)
+                }
+            }
+            Divider(
+                modifier = Modifier.padding(start = 81.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.16f),
+                thickness = 0.6.dp
+            )
+        }
     }
 }
 
