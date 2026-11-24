@@ -30,7 +30,7 @@ import top.trumeet.ui.theme.UiStyle
  */
 @Composable
 fun MiuixSwitch(checked: Boolean, enabled: Boolean = true) {
-    val thumbOffset by animateDpAsState(if (checked) 20.dp else 2.dp)
+    val thumbOffset by animateDpAsState(if (checked) 16.dp else 2.dp)
     Box(
         Modifier
             .size(width = 42.dp, height = 26.dp)
@@ -106,11 +106,17 @@ fun StyleActionRow(title: String, summary: String, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     } else {
-        androidx.compose.material3.ListItem(
-            headlineContent = { Text(title) },
-            supportingContent = { Text(summary) },
-            trailingContent = { Text("›") },
-            modifier = Modifier.clickable(onClick = onClick)
-        )
+        Row(
+            Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(summary, modifier = Modifier.padding(top = 3.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Text("›", style = MaterialTheme.typography.titleLarge)
+        }
     }
 }
