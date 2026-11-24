@@ -66,16 +66,11 @@ private fun AppearanceBlock(onUiStyleChange: (UiStyle) -> Unit) {
     SettingsGroup(title = "界面风格") {
         SettingsItem(
             title = "界面风格",
-            summary = "当前：${current.label}\nMiuix 偏小米系；Material 偏原生材质",
-            values = arrayOf(UiStyle.MIUIX.label, UiStyle.MATERIAL.label),
-            defaultValue = current.label
-        ) { selected ->
-            val style = when (selected) {
-                UiStyle.MATERIAL.label -> UiStyle.MATERIAL
-                else -> UiStyle.MIUIX
-            }
-            UiStyle.save(context, style)
-            onUiStyleChange(style)
+            summary = "当前：${current.label}\nMiuix 偏小米系；Material 偏原生材质\n点击切换"
+        ) {
+            val next = if (current == UiStyle.MIUIX) UiStyle.MATERIAL else UiStyle.MIUIX
+            UiStyle.save(context, next)
+            onUiStyleChange(next)
         }
     }
 }
