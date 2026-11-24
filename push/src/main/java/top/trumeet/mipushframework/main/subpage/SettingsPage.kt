@@ -3,6 +3,7 @@ package top.trumeet.mipushframework.main.subpage
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -30,29 +31,52 @@ import top.trumeet.mipushframework.MainPageOperation
 import top.trumeet.mipushframework.component.SettingsGroup
 import top.trumeet.mipushframework.component.SettingsItem
 import top.trumeet.mipushframework.main.HelpPage
+import top.trumeet.ui.theme.LocalUiStyle
 import top.trumeet.ui.theme.Theme
-import android.widget.Toast
+import top.trumeet.ui.theme.UiStyle
 
 @Composable
-fun Settings() {
+fun Settings(onUiStyleChange: (UiStyle) -> Unit = {}) {
     Theme {
         Surface(
             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             color = MaterialTheme.colorScheme.background
         ) {
-            SettingsScreen()
+            SettingsScreen(onUiStyleChange)
         }
     }
 }
 
 @Composable
-private fun SettingsScreen() {
+private fun SettingsScreen(onUiStyleChange: (UiStyle) -> Unit) {
     Column {
+        AppearanceBlock(onUiStyleChange)
         ServiceBlock()
         OSystemBlock()
         NotificationBlock()
         MaintenanceBlock()
         AboutBlock()
+    }
+}
+
+@Composable
+private fun AppearanceBlock(onUiStyleChange: (UiStyle) -> Unit) {
+    val context = LocalContext.current
+    val current = LocalUiStyle.current
+    SettingsGroup(title = "界面风格") {
+        SettingsItem(
+            title = "界面风格",
+            summary = "当前：${current.label}\nMiuix 偏小米系；Material 偏原生材质",
+            values = arrayOf(UiStyle.MIUIX.label, UiStyle.MATERIAL.label),
+            defaultValue = current.label
+        ) { selected ->
+            val style = when (selected) {
+                UiStyle.MATERIAL.label -> UiStyle.MATERIAL
+                else -> UiStyle.MIUIX
+            }
+            UiStyle.save(context, style)
+            onUiStyleChange(style)
+        }
     }
 }
 

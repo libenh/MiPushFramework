@@ -3,15 +3,13 @@ package top.trumeet.mipushframework.main
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -42,7 +40,9 @@ import top.trumeet.mipushframework.main.subpage.ApplicationList
 import top.trumeet.mipushframework.main.subpage.EventList
 import top.trumeet.mipushframework.main.subpage.Settings
 import top.trumeet.mipushframework.utils.applyOplusWindowStyle
+import top.trumeet.ui.theme.LocalUiStyle
 import top.trumeet.ui.theme.Theme
+import top.trumeet.ui.theme.UiStyle
 
 private val mainPageUtils = MainPageUtils()
 private var placeholder by mutableStateOf("搜索应用或推送记录")
@@ -53,7 +53,17 @@ class MainPage : ComponentActivity() {
         applyOplusWindowStyle()
         mainPageUtils.initOnCreate(applicationContext) { placeholder = it.toString() }
         setContent {
-            Main(Screen.Overview.route.toString()) {
+            var uiStyle by rememberSaveable {
+                mutableStateOf(UiStyle.current(this).key)
+            }
+            Main(
+                startDestination = Screen.Overview.route.toString(),
+                uiStyleKey = uiStyle,
+                onUiStyleChange = {
+                    UiStyle.save(this, it)
+                    uiStyle = it.key
+                }
+            ) {
                 {
                     composable(Screen.Overview.route.toString()) {
                         Overview(
@@ -76,7 +86,12 @@ class MainPage : ComponentActivity() {
                             ApplicationList(query)
                         }
                     }
-                    composable(Screen.Settings.route.toString()) { Settings() }
+                    composable(Screen.Settings.route.toString()) {
+                        Settings(onUiStyleChange = { style ->
+                            UiStyle.save(this@MainPage, style)
+                            uiStyle = style.key
+                        })
+                    }
                 }
             }
         }
@@ -96,7 +111,12 @@ private sealed class Screen(val route: Int, val icon: Int) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Main(startDestination: String, navContent: () -> NavGraphBuilder.() -> Unit) {
+private fun Main(
+    startDestination: String,
+    uiStyleKey: String,
+    onUiStyleChange: (UiStyle) -> Unit,
+    navContent: () -> NavGraphBuilder.() -> Unit
+) {
     val navController = rememberNavController()
     androidx.compose.runtime.LaunchedEffect(MainPage.pendingNavigation) {
         val route = MainPage.pendingNavigation ?: return@LaunchedEffect
@@ -107,13 +127,14 @@ private fun Main(startDestination: String, navContent: () -> NavGraphBuilder.() 
         MainPage.pendingNavigation = null
     }
 
-    Theme {
+    Theme(style = UiStyle.fromKey(uiStyleKey)) {
+        val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
         Scaffold(
             modifier = Modifier.fillMaxSize().statusBarsPadding(),
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
-            topBar = { MainTopBar(navController) },
-            bottomBar = { BottomNavigationBar(navController) }
+            topBar = { MainTopBar(navController, isMiuix) },
+            bottomBar = { BottomNavigationBar(navController, isMiuix) }
         ) { padding ->
             NavHost(
                 navController = navController,
@@ -127,7 +148,7 @@ private fun Main(startDestination: String, navContent: () -> NavGraphBuilder.() 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainTopBar(navController: NavController) {
+private fun MainTopBar(navController: NavController, isMiuix: Boolean) {
     val entry by navController.currentBackStackEntryAsState()
     val route = entry?.destination?.route
     val screen = when (route) {
@@ -136,12 +157,17 @@ private fun MainTopBar(navController: NavController) {
         Screen.Settings.route.toString() -> Screen.Settings
         else -> Screen.Overview
     }
-    Surface(color = MaterialTheme.colorScheme.surface) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = if (isMiuix) 0.dp else 1.dp,
+        shadowElevation = if (isMiuix) 0.dp else 2.dp
+    ) {
         TopAppBar(
             title = {
                 Text(
                     stringResource(screen.route),
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = if (isMiuix) MaterialTheme.typography.titleLarge
+                    else MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             },
@@ -153,11 +179,12 @@ private fun MainTopBar(navController: NavController) {
 }
 
 @Composable
-private fun BottomNavigationBar(navController: NavController) {
+private fun BottomNavigationBar(navController: NavController, isMiuix: Boolean) {
     val items = listOf(Screen.Overview, Screen.Apps, Screen.Events, Screen.Settings)
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 3.dp,
+        shadowElevation = if (isMiuix) 8.dp else 3.dp,
+        tonalElevation = if (isMiuix) 0.dp else 2.dp,
         modifier = Modifier.navigationBarsPadding()
     ) {
         NavigationBar(
