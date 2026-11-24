@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
@@ -36,6 +38,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.xiaomi.xmsf.R
 import com.xiaomi.xmsf.utils.ConfigCenter
 import top.trumeet.ui.theme.LocalUiStyle
@@ -52,14 +55,14 @@ fun SettingsItem(
     val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
     Row(
         Modifier.fillMaxWidth()
-            .clip(if (isMiuix) RoundedCornerShape(18.dp) else MaterialTheme.shapes.medium)
+            .clip(if (isMiuix) RoundedCornerShape(16.dp) else MaterialTheme.shapes.medium)
             .clickable(onClick = onClick, enabled = enabled)
             .heightIn(min = if (summary.isNullOrEmpty()) {
-                if (isMiuix) 64.dp else 58.dp
+                if (isMiuix) 66.dp else 56.dp
             } else {
-                if (isMiuix) 76.dp else 72.dp
+                if (isMiuix) 78.dp else 68.dp
             })
-            .padding(horizontal = if (isMiuix) 14.dp else 12.dp, vertical = 4.dp)
+            .padding(horizontal = if (isMiuix) 16.dp else 12.dp, vertical = 5.dp)
             .alpha(if (enabled) 1f else 0.48f),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -74,13 +77,9 @@ fun SettingsItem(title: String, summary: String, key: String, values: Array<Stri
         title = title,
         summary = summary,
         confirmButton = { dismiss ->
-            TextButton(onClick = dismiss) {
-                Text(stringResource(android.R.string.ok))
-            }
+            TextButton(onClick = dismiss) { Text(stringResource(android.R.string.ok)) }
         },
-        content = { dismiss ->
-            ItemLists(key, defaultValue, values, dismiss)
-        }
+        content = { dismiss -> ItemLists(key, defaultValue, values, dismiss) }
     )
 }
 
@@ -114,14 +113,33 @@ fun SettingsDialog(
     content: @Composable () -> Unit
 ) {
     if (!shouldShowDialog) return
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = confirmButton,
-        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
-        text = content,
-        shape = MaterialTheme.shapes.large,
-        containerColor = MaterialTheme.colorScheme.surface
-    )
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
+    if (isMiuix) {
+        Dialog(onDismissRequest = onDismiss) {
+            Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(Modifier.padding(22.dp)) {
+                    Text(title, style = MaterialTheme.typography.titleLarge)
+                    Column(Modifier.padding(top = 18.dp, bottom = 12.dp)) { content() }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End) {
+                        confirmButton()
+                    }
+                }
+            }
+        }
+    } else {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            confirmButton = confirmButton,
+            title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+            text = content,
+            shape = MaterialTheme.shapes.large,
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
 }
 
 @Composable
@@ -154,37 +172,43 @@ private fun ItemLists(key: String, defaultValue: String, values: Array<String>, 
 fun SettingsGroup(title: String, content: @Composable () -> Unit) {
     val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
     var expanded by rememberSaveable(title) { mutableStateOf(true) }
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 7.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = if (isMiuix) 10.dp else 6.dp)) {
         Row(
             Modifier.fillMaxWidth()
-                .clip(if (isMiuix) RoundedCornerShape(18.dp) else MaterialTheme.shapes.medium)
+                .clip(if (isMiuix) RoundedCornerShape(14.dp) else MaterialTheme.shapes.medium)
                 .clickable { expanded = !expanded }
-                .padding(horizontal = 5.dp, vertical = 12.dp),
+                .padding(horizontal = if (isMiuix) 4.dp else 5.dp, vertical = if (isMiuix) 14.dp else 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 title,
-                style = MaterialTheme.typography.titleMedium,
+                style = if (isMiuix) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(Modifier.weight(1f))
-            Text(
-                if (expanded) "⌃" else "⌄",
+            Text(if (expanded) "−" else "+",
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (expanded) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = if (isMiuix) RoundedCornerShape(24.dp) else MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = if (isMiuix) 0.dp else 1.dp,
-                border = if (isMiuix) {
-                    BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f))
-                } else null
-            ) {
-                Column(Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) { content() }
+            if (isMiuix) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(22.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f))
+                ) {
+                    Column(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) { content() }
+                }
+            } else {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Column(Modifier.padding(horizontal = 8.dp, vertical = 5.dp)) { content() }
+                }
             }
         }
     }
@@ -211,23 +235,28 @@ fun SettingsItem(
 
 @Composable
 fun SettingsItem(title: String, summary: String? = null, enabled: Boolean = true, checked: Boolean, onClick: () -> Unit) {
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
     SettingsItem(title, summary, content = {
-        Switch(checked = checked, onCheckedChange = null, modifier = Modifier.scale(0.82f))
+        if (isMiuix) MiuixSwitch(checked, enabled)
+        else Switch(checked = checked, onCheckedChange = null, modifier = Modifier.scale(0.82f))
     }, enabled = enabled, onClick = onClick)
 }
 
 @Composable
 fun ItemInfo(title: String, summary: String?, modifier: Modifier = Modifier) {
-    Column(modifier.padding(start = 12.dp, end = 12.dp, top = 9.dp, bottom = 9.dp)) {
-        Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
+    Column(modifier.padding(
+        start = if (isMiuix) 8.dp else 12.dp,
+        end = 12.dp,
+        top = if (isMiuix) 12.dp else 9.dp,
+        bottom = if (isMiuix) 12.dp else 9.dp
+    )) {
+        Text(title, style = if (isMiuix) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface)
         summary?.takeIf { it.isNotBlank() }?.let {
-            Text(
-                it,
-                style = MaterialTheme.typography.bodySmall,
+            Text(it, style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp),
-                maxLines = 2
-            )
+                modifier = Modifier.padding(top = 4.dp), maxLines = 2)
         }
     }
 }
@@ -243,7 +272,9 @@ fun InfoDialogPreview() {
 @Preview(showBackground = true)
 @Composable
 fun SettingsItemPreview() {
-    SettingsItem(title = stringResource(R.string.settings_start_foreground_service), summary = stringResource(R.string.settings_start_foreground_service_summary), key = "StartForegroundService", defaultValue = false, enabled = false)
+    SettingsItem(title = stringResource(R.string.settings_start_foreground_service),
+        summary = stringResource(R.string.settings_start_foreground_service_summary),
+        key = "StartForegroundService", defaultValue = false, enabled = false)
 }
 
 @Preview(showBackground = true)
