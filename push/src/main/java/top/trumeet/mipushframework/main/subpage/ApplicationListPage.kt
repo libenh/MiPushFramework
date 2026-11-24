@@ -46,6 +46,8 @@ import top.trumeet.common.utils.Utils
 import top.trumeet.mipush.provider.entities.RegisteredApplication
 import top.trumeet.mipushframework.component.AppIcon
 import top.trumeet.mipushframework.component.RefreshableLazyColumn
+import top.trumeet.ui.theme.LocalUiStyle
+import top.trumeet.ui.theme.UiStyle
 import top.trumeet.mipushframework.component.iconCache
 import top.trumeet.mipushframework.main.RegistrationStateStyle
 import top.trumeet.mipushframework.utils.ParseUtils
@@ -152,26 +154,46 @@ private fun Footer(notUseMiPushCount: Int) {
 @Composable
 private fun ApplicationItem(item: RegisteredApplication) {
     val context = LocalContext.current
-
-    Column(Modifier.fillMaxWidth()) {
-        Row(
-            Modifier.fillMaxWidth()
-                .clickable { EventListPageUtils.startManagePermissions(context, item.packageName, true) }
-                .padding(horizontal = 20.dp, vertical = 13.dp),
-            verticalAlignment = Alignment.CenterVertically
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
+    if (isMiuix) {
+        Surface(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 5.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .clickable { EventListPageUtils.startManagePermissions(context, item.packageName, true) },
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surface
         ) {
-            AppIcon(item.packageName, item.appName, Modifier.size(46.dp))
-            Spacer(Modifier.width(15.dp))
-            Column(Modifier.weight(1f)) {
-                AppInfo(item)
-                LastReceive(item)
+            Row(Modifier.padding(horizontal = 16.dp, vertical = 15.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                AppIcon(item.packageName, item.appName, Modifier.size(48.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    AppInfo(item)
+                    LastReceive(item)
+                }
             }
         }
-        Divider(
-            modifier = Modifier.padding(start = 81.dp),
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.16f),
-            thickness = 0.6.dp
-        )
+    } else {
+        Column(Modifier.fillMaxWidth()) {
+            Row(
+                Modifier.fillMaxWidth()
+                    .clickable { EventListPageUtils.startManagePermissions(context, item.packageName, true) }
+                    .padding(horizontal = 20.dp, vertical = 13.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AppIcon(item.packageName, item.appName, Modifier.size(46.dp))
+                Spacer(Modifier.width(15.dp))
+                Column(Modifier.weight(1f)) {
+                    AppInfo(item)
+                    LastReceive(item)
+                }
+            }
+            Divider(
+                modifier = Modifier.padding(start = 81.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.16f),
+                thickness = 0.6.dp
+            )
+        }
     }
 }
 
