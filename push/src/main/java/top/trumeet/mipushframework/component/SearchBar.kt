@@ -32,11 +32,15 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.trumeet.ui.theme.LocalUiStyle
+import top.trumeet.ui.theme.UiStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(placeholder: String, onValueChange: (String) -> Unit) {
     val focusManager = LocalFocusManager.current
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
+    val fieldShape = if (isMiuix) RoundedCornerShape(18.dp) else RoundedCornerShape(22.dp)
     var query by rememberSaveable { mutableStateOf("") }
     val ph by rememberUpdatedState(placeholder)
     val debounceOnValueChange: (String) -> Unit = debounce(onValueChange)
@@ -46,11 +50,14 @@ fun SearchBar(placeholder: String, onValueChange: (String) -> Unit) {
     }
 
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp),
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        shadowElevation = 1.dp
+        modifier = Modifier.fillMaxWidth().padding(
+            horizontal = if (isMiuix) 16.dp else 18.dp,
+            vertical = 10.dp
+        ),
+        shape = fieldShape,
+        color = if (isMiuix) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
+        tonalElevation = if (isMiuix) 0.dp else 2.dp,
+        shadowElevation = if (isMiuix) 0.dp else 1.dp
     ) {
         TextField(
             value = query,
@@ -70,7 +77,7 @@ fun SearchBar(placeholder: String, onValueChange: (String) -> Unit) {
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-            shape = RoundedCornerShape(22.dp),
+            shape = fieldShape,
             colors = TextFieldDefaults.textFieldColors(
                 containerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
