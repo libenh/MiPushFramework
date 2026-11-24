@@ -21,14 +21,15 @@ import com.xiaomi.xmpush.thrift.XmPushActionNotification;
 import top.trumeet.common.utils.Utils;
 
 /**
- * 强制注册：清理应用端 mipush 缓存并触发重注册。
- * ColorOS 17 上优先 startService，广播作为补充。
+ * C17 强制注册：清缓存 + startService 主路径 + 广播补充。
  */
 public class RegistrationHelper {
     private static final Logger logger = XLog.tag("RegistrationHelper").build();
+    private static final String TARGET_HANDLER =
+            "com.xiaomi.mipush.sdk.PushMessageHandler";
 
-    Context context;
-    String packageName;
+    private final Context context;
+    private final String packageName;
 
     public RegistrationHelper(Context context, String packageName) {
         this.context = context;
@@ -37,58 +38,64 @@ public class RegistrationHelper {
 
     public static void tryForceRegister(String packageName) {
         Context app = Utils.getApplication();
+        if (app == null) {
+            logger.e("tryForceRegister: application null");
+            return;
+        }
         byte[] msgBytes = XMPushUtils.packToBytes(createForceRegisterMessage(packageName));
+        long now = System.currentTimeMillis();
 
-        // 1) startService 到目标 PushMessageHandler（O系/高版本 Android 更可靠）
+        // startService 主路径
+        boolean serviceOk = false;
         try {
             Intent serviceIntent = new Intent(PushConstants.MIPUSH_ACTION_NEW_MESSAGE);
-            serviceIntent.setComponent(new ComponentName(
-                    packageName, "com.xiaomi.mipush.sdk.PushMessageHandler"));
+            serviceIntent.setComponent(new ComponentName(packageName, TARGET_HANDLER));
             serviceIntent.putExtra(PushConstants.MIPUSH_EXTRA_PAYLOAD, msgBytes);
-            serviceIntent.putExtra(PushConstants.MESSAGE_RECEIVE_TIME, System.currentTimeMillis());
+            serviceIntent.putExtra(PushConstants.MESSAGE_RECEIVE_TIME, now);
+            ComponentName cn;
             if (Build.VERSION.SDK_INT >= 26) {
                 try {
-                    app.startForegroundService(serviceIntent);
+                    cn = app.startForegroundService(serviceIntent);
                 } catch (Throwable t) {
-                    app.startService(serviceIntent);
+                    cn = app.startService(serviceIntent);
                 }
             } else {
-                app.startService(serviceIntent);
+                cn = app.startService(serviceIntent);
             }
-            logger.i("[" + packageName + "] force register via startService");
+            serviceOk = cn != null;
+            logger.i("[" + packageName + "] forceRegister startService cn=" + cn);
         } catch (Throwable t) {
-            logger.e("[" + packageName + "] startService force register failed: " + t.getMessage(), t);
+            logger.e("[" + packageName + "] forceRegister startService: " + t.getMessage(), t);
         }
 
-        // 2) 广播补充
+        // 广播补充（始终发，避免仅 service 失败时无路）
         try {
             Intent intent = new Intent(PushConstants.MIPUSH_ACTION_NEW_MESSAGE);
             intent.setPackage(packageName);
             intent.putExtra(PushConstants.MIPUSH_EXTRA_PAYLOAD, msgBytes);
-            intent.putExtra(PushConstants.MESSAGE_RECEIVE_TIME, System.currentTimeMillis());
+            intent.putExtra(PushConstants.MESSAGE_RECEIVE_TIME, now);
             app.sendBroadcast(intent);
-            logger.i("[" + packageName + "] force register via broadcast");
+            logger.i("[" + packageName + "] forceRegister broadcast sent (serviceOk=" + serviceOk + ")");
         } catch (Throwable t) {
-            logger.e("[" + packageName + "] broadcast force register failed: " + t.getMessage(), t);
+            logger.e("[" + packageName + "] forceRegister broadcast: " + t.getMessage(), t);
         }
     }
 
     @NonNull
     public static XmPushActionContainer createForceRegisterMessage(String packageName) {
         String id = "fake_expired_" + packageName + "_" + System.currentTimeMillis();
-        XmPushActionNotification regIdExpiredNotification = new XmPushActionNotification();
-        regIdExpiredNotification.setType(NotificationType.RegIdExpired.value);
-        regIdExpiredNotification.setId(id);
+        XmPushActionNotification notification = new XmPushActionNotification();
+        notification.setType(NotificationType.RegIdExpired.value);
+        notification.setId(id);
         PushMetaInfo metaInfo = new PushMetaInfo();
         metaInfo.setId(id);
-        XmPushActionContainer regIdExpiredContainer =
-                XMPushUtils.packToContainer(regIdExpiredNotification, packageName);
-        regIdExpiredContainer.setMetaInfo(metaInfo);
-        return regIdExpiredContainer;
+        XmPushActionContainer container =
+                XMPushUtils.packToContainer(notification, packageName);
+        container.setMetaInfo(metaInfo);
+        return container;
     }
 
     public boolean removeMiPushXml() {
-        // 多路径：主用户 / CE / 多用户常见目录
         String cmd = String.format(
                 "rm -f " +
                         "/data/user/0/%s/shared_prefs/mipush*.xml " +
@@ -97,10 +104,15 @@ public class RegistrationHelper {
                         "/data/data/%s/shared_prefs/mipush*.xml " +
                         "2>/dev/null; echo done",
                 packageName, packageName, packageName, packageName);
-        Shell.Result result = Shell.cmd(cmd).exec();
-        logger.i("[" + packageName + "] removeMiPushXml success=" + result.isSuccess()
-                + " out=" + result.getOut());
-        return result.isSuccess();
+        try {
+            Shell.Result result = Shell.cmd(cmd).exec();
+            logger.i("[" + packageName + "] removeMiPushXml ok=" + result.isSuccess()
+                    + " " + result.getOut());
+            return result.isSuccess();
+        } catch (Throwable t) {
+            logger.e("[" + packageName + "] removeMiPushXml: " + t.getMessage(), t);
+            return false;
+        }
     }
 
     public void deleteRegistrationInfoAndRetryForceRegister() {

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 
@@ -38,16 +39,18 @@ import top.trumeet.common.utils.CustomConfiguration;
 import top.trumeet.common.utils.Utils;
 
 /**
- * @author zts1993
- * @date 2018/2/9
+ * C17 / O系：消息回传以 startService 为主，失败则降级广播。
  */
-
 public class MyPushMessageHandler extends IntentService {
-    private static Logger logger = XLog.tag("MyPushMessageHandler").build();
+    private static final Logger logger = XLog.tag("MyPushMessageHandler").build();
 
     private static final int APP_CHECK_FRONT_MAX_RETRY = 8;
     private static final int APP_CHECK_SLEEP_DURATION_MS = 500;
-    private static final int APP_CHECK_SLEEP_MAX_TIMEOUT_MS = APP_CHECK_FRONT_MAX_RETRY * APP_CHECK_SLEEP_DURATION_MS;
+    private static final int APP_CHECK_SLEEP_MAX_TIMEOUT_MS =
+            APP_CHECK_FRONT_MAX_RETRY * APP_CHECK_SLEEP_DURATION_MS;
+
+    private static final String TARGET_HANDLER =
+            "com.xiaomi.mipush.sdk.PushMessageHandler";
 
     static ITopActivity iTopActivity = null;
 
@@ -57,6 +60,9 @@ public class MyPushMessageHandler extends IntentService {
 
     @Override
     protected void onHandleIntent(final Intent intent) {
+        if (intent == null) {
+            return;
+        }
         byte[] payload = intent.getByteArrayExtra(PushConstants.MIPUSH_EXTRA_PAYLOAD);
         if (payload == null) {
             logger.e("mipush_payload is null");
@@ -65,6 +71,7 @@ public class MyPushMessageHandler extends IntentService {
 
         final XmPushActionContainer container = XMPushUtils.packToContainer(payload);
         if (container == null) {
+            logger.e("container is null");
             return;
         }
 
@@ -75,16 +82,17 @@ public class MyPushMessageHandler extends IntentService {
         } catch (Exception e) {
             logger.e(e.getLocalizedMessage(), e);
         }
-
     }
 
     public static void cancelNotification(Context context, Bundle bundle) {
+        if (bundle == null) {
+            return;
+        }
         byte[] payload = bundle.getByteArray(PushConstants.MIPUSH_EXTRA_PAYLOAD);
         if (payload == null) {
             logger.e("mipush_payload is null");
             return;
         }
-
         final XmPushActionContainer container = XMPushUtils.packToContainer(payload);
         if (container == null) {
             return;
@@ -92,62 +100,104 @@ public class MyPushMessageHandler extends IntentService {
         cancelNotification(context, bundle, container);
     }
 
-    public static void cancelNotification(Context context, Bundle bundle, XmPushActionContainer container) {
-        int notificationId = bundle.getInt(Constants.INTENT_NOTIFICATION_ID, 0);
-        String notificationGroup = bundle.getString(Constants.INTENT_NOTIFICATION_GROUP);
+    public static void cancelNotification(Context context, Bundle bundle,
+                                          XmPushActionContainer container) {
+        int notificationId = bundle != null
+                ? bundle.getInt(Constants.INTENT_NOTIFICATION_ID, 0) : 0;
+        String notificationGroup = bundle != null
+                ? bundle.getString(Constants.INTENT_NOTIFICATION_GROUP) : null;
         try {
             Configurations.getInstance().handle(container.packageName, container);
         } catch (Exception e) {
             logger.e("cancelNotification", e);
         }
         CustomConfiguration custom = XMPushUtils.getConfiguration(container);
-
         NotificationController.cancel(context, container,
                 notificationId, notificationGroup, custom.clearGroup(false));
     }
 
     public static void launchApp(Context context, XmPushActionContainer container) {
         if (iTopActivity == null) {
-            iTopActivity = TopActivityFactory.newInstance(Global.ConfigCenter().getAccessMode(context));
+            iTopActivity = TopActivityFactory.newInstance(
+                    Global.ConfigCenter().getAccessMode(context));
         }
-
         if (!iTopActivity.isEnabled(context)) {
             iTopActivity.guideToEnable(context);
             return;
         }
-
         String targetPackage = container.getPackageName();
-
         activeApp(context, targetPackage);
         pullUpApp(context, targetPackage, container);
     }
 
-    public static ComponentName startService(Context context, XmPushActionContainer container, byte[] payload) {
+    public static ComponentName startService(Context context,
+                                             XmPushActionContainer container,
+                                             byte[] payload) {
         launchApp(context, container);
-
         return forwardToTargetApplication(context, payload);
     }
 
+    /**
+     * C17 核心：优先 startService 到目标 PushMessageHandler；
+     * 失败则用带 package 限定的广播作为降级。
+     */
     public static ComponentName forwardToTargetApplication(Context context, byte[] payload) {
         XmPushActionContainer container = XMPushUtils.packToContainer(payload);
+        if (container == null) {
+            logger.e("forward: container null");
+            return null;
+        }
         PushMetaInfo metaInfo = container.getMetaInfo();
         String targetPackage = container.getPackageName();
 
-        final Intent localIntent = new Intent(PushConstants.MIPUSH_ACTION_NEW_MESSAGE);
-        localIntent.setComponent(new ComponentName(targetPackage, "com.xiaomi.mipush.sdk.PushMessageHandler"));
+        Intent localIntent = new Intent(PushConstants.MIPUSH_ACTION_NEW_MESSAGE);
+        localIntent.setComponent(new ComponentName(targetPackage, TARGET_HANDLER));
         localIntent.putExtra(PushConstants.MIPUSH_EXTRA_PAYLOAD, payload);
         localIntent.putExtra(MIPushNotificationHelper.FROM_NOTIFICATION, true);
-        localIntent.addCategory(String.valueOf(metaInfo.getNotifyId()));
-        logger.d(packageInfo(targetPackage, "send to service"));
-        ComponentName componentName = context.startService(localIntent);
+        if (metaInfo != null) {
+            localIntent.addCategory(String.valueOf(metaInfo.getNotifyId()));
+        }
+
+        ComponentName componentName = null;
+        try {
+            if (Build.VERSION.SDK_INT >= 26) {
+                try {
+                    componentName = context.startForegroundService(localIntent);
+                } catch (Throwable t) {
+                    logger.w(packageInfo(targetPackage,
+                            "startForegroundService fail, fallback startService: " + t.getMessage()));
+                    componentName = context.startService(localIntent);
+                }
+            } else {
+                componentName = context.startService(localIntent);
+            }
+            logger.i(packageInfo(targetPackage, "startService result=" + componentName));
+        } catch (Throwable t) {
+            logger.e(packageInfo(targetPackage, "startService failed: " + t.getMessage()), t);
+        }
+
+        if (componentName == null) {
+            // 降级：广播（部分 App Receiver 仍可收）
+            try {
+                Intent broadcast = new Intent(PushConstants.MIPUSH_ACTION_NEW_MESSAGE);
+                broadcast.setPackage(targetPackage);
+                broadcast.putExtra(PushConstants.MIPUSH_EXTRA_PAYLOAD, payload);
+                broadcast.putExtra(MIPushNotificationHelper.FROM_NOTIFICATION, true);
+                context.sendBroadcast(broadcast);
+                logger.i(packageInfo(targetPackage, "fallback broadcast sent"));
+            } catch (Throwable t) {
+                logger.e(packageInfo(targetPackage, "broadcast failed: " + t.getMessage()), t);
+            }
+        }
         return componentName;
     }
 
     private static void activeApp(Context context, String targetPackage) {
-        if (Global.ConfigCenter().isIceboxSupported(context) &&
-                Utils.isAppInstalled(IceBox.PACKAGE_NAME)) {
+        if (Global.ConfigCenter().isIceboxSupported(context)
+                && Utils.isAppInstalled(IceBox.PACKAGE_NAME)) {
             try {
-                if (ContextCompat.checkSelfPermission(context, IceBox.SDK_PERMISSION) == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(context, IceBox.SDK_PERMISSION)
+                        == PackageManager.PERMISSION_GRANTED) {
                     int enabledSetting = IceBox.getAppEnabledSetting(context, targetPackage);
                     if (enabledSetting != 0) {
                         logger.w(packageInfo(targetPackage, "active app by IceBox SDK"));
@@ -155,15 +205,18 @@ public class MyPushMessageHandler extends IntentService {
                         return;
                     }
                 } else {
-                    logger.w(packageInfo(targetPackage, "skip active app by IceBox SDK due to lack of permissions"));
+                    logger.w(packageInfo(targetPackage,
+                            "skip IceBox active due to lack of permissions"));
                 }
             } catch (Throwable e) {
                 logger.e(packageInfo(targetPackage, "activeApp failed " + e.getLocalizedMessage()), e);
             }
         }
-        Shell.cmd("pm enable " + targetPackage).exec();
+        try {
+            Shell.cmd("pm enable " + targetPackage).exec();
+        } catch (Throwable ignored) {
+        }
     }
-
 
     private static Intent getJumpIntent(Context context, XmPushActionContainer container) {
         Intent intent = MyMIPushNotificationHelper.getSdkIntent(context, container);
@@ -174,102 +227,97 @@ public class MyPushMessageHandler extends IntentService {
     }
 
     private static Intent getJumpIntentFromPkg(Context context, String targetPackage) {
-        Intent intent = null;
         try {
-            intent = context.getPackageManager().getLaunchIntentForPackage(targetPackage);
-            logger.d(packageInfo(targetPackage, intent.toString()));
+            return context.getPackageManager().getLaunchIntentForPackage(targetPackage);
         } catch (RuntimeException ignore) {
+            return null;
         }
-        return intent;
     }
 
-    private void runWithAppStateElevatedToForeground(final String pkg, final Consumer<Boolean> task) {
-        if (SDK_INT < P) {      // onNullBinding() was introduced in Android P.
+    private void runWithAppStateElevatedToForeground(final String pkg,
+                                                     final Consumer<Boolean> task) {
+        if (SDK_INT < P) {
             task.accept(Boolean.FALSE);
             return;
         }
-        final Intent intent = new Intent().setClassName(pkg, MyMIPushNotificationHelper.CLASS_NAME_PUSH_MESSAGE_HANDLER);
+        final Intent intent = new Intent()
+                .setClassName(pkg, MyMIPushNotificationHelper.CLASS_NAME_PUSH_MESSAGE_HANDLER);
         final Context appContext = getApplicationContext();
         final boolean successful = appContext.bindService(intent, new ServiceConnection() {
-
             private void runTaskAndUnbind() {
                 task.accept(Boolean.TRUE);
-                appContext.unbindService(this);
+                try {
+                    appContext.unbindService(this);
+                } catch (Throwable ignored) {
+                }
             }
 
-            @RequiresApi(P) @Override public void onNullBinding(final ComponentName name) {
+            @RequiresApi(P)
+            @Override
+            public void onNullBinding(final ComponentName name) {
                 runTaskAndUnbind();
             }
 
-            @Override public void onServiceConnected(final ComponentName name, final IBinder service) {
-                runTaskAndUnbind();     // Should not happen
+            @Override
+            public void onServiceConnected(final ComponentName name, final IBinder service) {
+                runTaskAndUnbind();
             }
 
-            @Override public void onServiceDisconnected(final ComponentName name) {}
+            @Override
+            public void onServiceDisconnected(final ComponentName name) {
+            }
         }, BIND_AUTO_CREATE | BIND_IMPORTANT | BIND_ABOVE_CLIENT);
 
-        if (! successful) task.accept(Boolean.FALSE);
+        if (!successful) {
+            task.accept(Boolean.FALSE);
+        }
     }
 
-    private static long pullUpApp(Context context, String targetPackage, XmPushActionContainer container) {
+    private static long pullUpApp(Context context, String targetPackage,
+                                  XmPushActionContainer container) {
         long start = System.currentTimeMillis();
-
         try {
-
-
+            if (iTopActivity == null) {
+                iTopActivity = TopActivityFactory.newInstance(
+                        Global.ConfigCenter().getAccessMode(context));
+            }
             if (!iTopActivity.isAppForeground(context, targetPackage)) {
-                logger.d(packageInfo(targetPackage, "app is not at front , let's pull up"));
-
+                logger.d(packageInfo(targetPackage, "app not front, pull up"));
                 Intent intent = getJumpIntent(context, container);
-
                 if (intent == null) {
-                    throw new RuntimeException("can not get default activity for " + targetPackage);
-                } else {
-                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-                    context.startActivity(intent);
-                    logger.d(packageInfo(targetPackage, "start activity"));
+                    throw new RuntimeException("no default activity for " + targetPackage);
                 }
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                context.startActivity(intent);
 
-
-                //wait
                 for (int i = 0; i < APP_CHECK_FRONT_MAX_RETRY; i++) {
-
-                    if (!iTopActivity.isAppForeground(context, targetPackage)) {
-                        Thread.sleep(APP_CHECK_SLEEP_DURATION_MS);
-                    } else {
+                    if (iTopActivity.isAppForeground(context, targetPackage)) {
                         break;
                     }
-
+                    Thread.sleep(APP_CHECK_SLEEP_DURATION_MS);
                     if (i == (APP_CHECK_FRONT_MAX_RETRY / 2)) {
-                        intent = getJumpIntentFromPkg(context, targetPackage);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                        context.startActivity(intent);
+                        Intent again = getJumpIntentFromPkg(context, targetPackage);
+                        if (again != null) {
+                            again.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            context.startActivity(again);
+                        }
                     }
                 }
-
                 if ((System.currentTimeMillis() - start) >= APP_CHECK_SLEEP_MAX_TIMEOUT_MS) {
-                    logger.w(packageInfo(targetPackage, "pull up app timeout"));
+                    logger.w(packageInfo(targetPackage, "pull up timeout"));
                 }
-
             } else {
-                logger.d(packageInfo(targetPackage, "app is at foreground"));
+                logger.d(packageInfo(targetPackage, "app foreground"));
             }
-
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         } catch (RuntimeException e) {
             logger.e(packageInfo(targetPackage, "pullUpApp failed " + e.getLocalizedMessage()), e);
         }
-
-
-        long end = System.currentTimeMillis();
-        return end - start;
-
+        return System.currentTimeMillis() - start;
     }
 
     private static String packageInfo(String packageName, String message) {
-        return "[" + packageName +"] " + message;
+        return "[" + packageName + "] " + message;
     }
 }
-
