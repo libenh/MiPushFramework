@@ -1,12 +1,12 @@
 package top.trumeet.mipushframework.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -38,6 +38,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.xiaomi.xmsf.R
 import com.xiaomi.xmsf.utils.ConfigCenter
+import top.trumeet.ui.theme.LocalUiStyle
+import top.trumeet.ui.theme.UiStyle
 
 @Composable
 fun SettingsItem(
@@ -47,12 +49,17 @@ fun SettingsItem(
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
     Row(
         Modifier.fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
+            .clip(if (isMiuix) RoundedCornerShape(18.dp) else MaterialTheme.shapes.medium)
             .clickable(onClick = onClick, enabled = enabled)
-            .heightIn(min = if (summary.isNullOrEmpty()) 58.dp else 72.dp)
-            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .heightIn(min = if (summary.isNullOrEmpty()) {
+                if (isMiuix) 64.dp else 58.dp
+            } else {
+                if (isMiuix) 76.dp else 72.dp
+            })
+            .padding(horizontal = if (isMiuix) 14.dp else 12.dp, vertical = 4.dp)
             .alpha(if (enabled) 1f else 0.48f),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -145,11 +152,12 @@ private fun ItemLists(key: String, defaultValue: String, values: Array<String>, 
 
 @Composable
 fun SettingsGroup(title: String, content: @Composable () -> Unit) {
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
     var expanded by rememberSaveable(title) { mutableStateOf(true) }
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 7.dp)) {
         Row(
             Modifier.fillMaxWidth()
-                .clip(MaterialTheme.shapes.medium)
+                .clip(if (isMiuix) RoundedCornerShape(18.dp) else MaterialTheme.shapes.medium)
                 .clickable { expanded = !expanded }
                 .padding(horizontal = 5.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -169,9 +177,12 @@ fun SettingsGroup(title: String, content: @Composable () -> Unit) {
         if (expanded) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                shape = if (isMiuix) RoundedCornerShape(24.dp) else MaterialTheme.shapes.large,
                 color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 1.dp
+                tonalElevation = if (isMiuix) 0.dp else 1.dp,
+                border = if (isMiuix) {
+                    BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f))
+                } else null
             ) {
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) { content() }
             }
