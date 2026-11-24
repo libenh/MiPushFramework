@@ -26,6 +26,8 @@ import top.trumeet.mipush.provider.entities.RegisteredApplication
 import top.trumeet.mipushframework.main.subpage.ApplicationPageOperation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import top.trumeet.ui.theme.LocalUiStyle
+import top.trumeet.ui.theme.UiStyle
 
 private data class OverviewStats(
     val total: Int,
@@ -40,6 +42,9 @@ internal fun Overview(
     onOpenEvents: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
+    val cardShape = if (isMiuix) RoundedCornerShape(26.dp) else MaterialTheme.shapes.large
+    val cardElevation = if (isMiuix) 0.dp else 1.dp
     var stats by remember { mutableStateOf<OverviewStats?>(null) }
 
     LaunchedEffect(Unit) {
@@ -56,21 +61,34 @@ internal fun Overview(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp)
+        modifier = Modifier.fillMaxWidth().padding(
+            horizontal = if (isMiuix) 16.dp else 18.dp,
+            vertical = 12.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(if (isMiuix) 20.dp else 16.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Text("运行概览", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
-            Text("O Push · realme UI / ColorOS", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "运行概览",
+                style = if (isMiuix) MaterialTheme.typography.headlineSmall
+                else MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                "O Push · realme UI / ColorOS",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = cardShape,
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 1.dp
+            tonalElevation = cardElevation,
+            shadowElevation = if (isMiuix) 0.dp else 1.dp
         ) {
-            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(Modifier.padding(if (isMiuix) 22.dp else 20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("应用接入统计", style = MaterialTheme.typography.titleMedium)
@@ -99,11 +117,12 @@ internal fun Overview(
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = cardShape,
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 1.dp
+            tonalElevation = cardElevation,
+            shadowElevation = if (isMiuix) 0.dp else 1.dp
         ) {
-            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.padding(if (isMiuix) 22.dp else 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("版本与设备", style = MaterialTheme.typography.titleMedium)
                 InfoLine("管理端版本", BuildConfig.VERSION_NAME)
                 InfoLine("Android 版本", Build.VERSION.RELEASE ?: "未知")
@@ -112,9 +131,9 @@ internal fun Overview(
         }
 
         Text("管理入口", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 2.dp))
-        OverviewAction("应用管理", "查看注册状态与应用接入情况", onOpenApps)
-        OverviewAction("推送事件", "查看消息到达记录与事件详情", onOpenEvents)
-        OverviewAction("设置", "服务配置、通知选项与流体云", onOpenSettings)
+        OverviewAction("应用管理", "查看注册状态与应用接入情况", isMiuix, onOpenApps)
+        OverviewAction("推送事件", "查看消息到达记录与事件详情", isMiuix, onOpenEvents)
+        OverviewAction("设置", "服务配置、通知选项与流体云", isMiuix, onOpenSettings)
     }
 }
 
@@ -139,15 +158,19 @@ private fun InfoLine(label: String, value: String) {
 }
 
 @Composable
-private fun OverviewAction(title: String, summary: String, onClick: () -> Unit) {
+private fun OverviewAction(title: String, summary: String, isMiuix: Boolean, onClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        shape = if (isMiuix) RoundedCornerShape(22.dp) else MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp
+        tonalElevation = if (isMiuix) 0.dp else 1.dp,
+        shadowElevation = if (isMiuix) 0.dp else 1.dp
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(
+                horizontal = if (isMiuix) 20.dp else 18.dp,
+                vertical = if (isMiuix) 18.dp else 16.dp
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
