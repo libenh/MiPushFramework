@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -38,6 +39,7 @@ import kotlinx.coroutines.launch
 import top.trumeet.ui.theme.LocalUiStyle
 import top.trumeet.ui.theme.UiStyle
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(placeholder: String, onValueChange: (String) -> Unit) {
     val focusManager = LocalFocusManager.current
