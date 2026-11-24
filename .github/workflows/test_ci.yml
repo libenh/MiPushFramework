@@ -16,17 +16,6 @@ on:
       - '.github/workflows/test_ci.yml'
   pull_request:
     branches: [master]
-    paths:
-      - 'push/**'
-      - 'common/**'
-      - 'mipush_hook/**'
-      - 'condom/**'
-      - 'gradle/**'
-      - 'gradlew'
-      - 'build.gradle'
-      - 'settings.gradle'
-      - 'gradle.properties'
-      - '.github/workflows/test_ci.yml'
   workflow_dispatch:
 
 concurrency:
@@ -64,7 +53,7 @@ jobs:
               -keystore .yuuta.jks \
               -storepass android -keypass android \
               -alias androiddebugkey \
-              -dname "CN=MiPushFramework CI,O=libenh,C=CN" \
+              -dname "CN=MiPushFramework C17,O=libenh,C=CN" \
               -keyalg RSA -keysize 2048 -validity 10000
             echo "KEYSTORE_PASS=android" >> "$GITHUB_ENV"
             echo "ALIAS_NAME=androiddebugkey" >> "$GITHUB_ENV"
@@ -77,46 +66,38 @@ jobs:
         with:
           exclude: v*-*
 
-      - name: Build normal + vc105 (O-series)
+      - name: Build C17 only (versionCode 105)
         run: |
           chmod +x gradlew
-          ./gradlew :push:assembleNormalRelease :push:assembleVc105Release --no-daemon -PversionName=${{ steps.version.outputs.describe }}
+          ./gradlew :push:assembleC17Release --no-daemon -PversionName=${{ steps.version.outputs.describe }}
 
-      - name: Prepare APKs
+      - name: Prepare APK
         id: apk
         run: |
           VERSION="${{ steps.version.outputs.describe }}"
-          NORMAL=$(find push/build/outputs/apk/normal/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
-          VC105=$(find push/build/outputs/apk/vc105/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
-          test -n "$NORMAL"
-          test -n "$VC105"
-          cp "$NORMAL" "${VERSION}-normal.apk"
-          cp "$VC105" "${VERSION}-vc105-O系.apk"
-          echo "normal=${VERSION}-normal.apk" >> "$GITHUB_OUTPUT"
-          echo "vc105=${VERSION}-vc105-O系.apk" >> "$GITHUB_OUTPUT"
+          APK=$(find push/build/outputs/apk/c17/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
+          test -n "$APK"
+          OUT="MiPush-C17-${VERSION}.apk"
+          cp "$APK" "$OUT"
+          echo "file=$OUT" >> "$GITHUB_OUTPUT"
 
-      - name: Upload APKs
+      - name: Upload C17 APK
         uses: actions/upload-artifact@v4
         with:
-          name: MiPushFramework
-          path: |
-            ${{ steps.apk.outputs.normal }}
-            ${{ steps.apk.outputs.vc105 }}
+          name: MiPush-C17
+          path: ${{ steps.apk.outputs.file }}
           retention-days: 14
 
       - name: Publish prerelease
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ steps.version.outputs.describe }}
+          name: C17 ${{ steps.version.outputs.describe }}
           tag_name: ${{ steps.version.outputs.describe }}
           target_commitish: ${{ steps.version.outputs.sha }}
           prerelease: true
-          files: |
-            ${{ steps.apk.outputs.normal }}
-            ${{ steps.apk.outputs.vc105 }}
+          files: ${{ steps.apk.outputs.file }}
           body: |
-            ## 下载说明
-            - **normal**：默认，versionCode 高，bindService 路径；MIUI 优先
-            - **vc105-O系**：versionCode=105，startService 路径；**ColorOS / OxygenOS / OnePlus 推荐**
-
-            ColorOS 17 注册/消息异常时请优先安装 vc105。
+            **ColorOS 17 / O系专用**
+            - versionCode = 105（startService 路径）
+            - 建议给 com.xiaomi.xmsf 自启动 + 后台运行
+            - 注册失败时在设置中使用「强制注册」
