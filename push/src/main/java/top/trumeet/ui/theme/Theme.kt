@@ -11,13 +11,15 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 val LocalUiStyle = staticCompositionLocalOf { UiStyle.MIUIX }
 
-/** Miuix：偏 MIUI/小米系橙色 + 更大圆角 */
+/** Miuix-inspired palette: Xiaomi orange accent, neutral surfaces and generous shapes. */
 private val MiuixLight = lightColorScheme(
-    primary = Color(0xFFFF6A00),
+    primary = Color(0xFFFF6900),
     onPrimary = Color.White,
     primaryContainer = Color(0xFFFFE4CC),
     onPrimaryContainer = Color(0xFF4A1C00),
@@ -29,7 +31,7 @@ private val MiuixLight = lightColorScheme(
     onTertiary = Color.White,
     tertiaryContainer = Color(0xFFDCE8FF),
     onTertiaryContainer = Color(0xFF001A41),
-    background = Color(0xFFF7F7F8),
+    background = Color(0xFFF5F5F7),
     onBackground = Color(0xFF1A1A1A),
     surface = Color(0xFFFFFFFF),
     onSurface = Color(0xFF1A1A1A),
@@ -53,7 +55,7 @@ private val MiuixDark = darkColorScheme(
     onTertiary = Color(0xFF002E6B),
     tertiaryContainer = Color(0xFF1A448F),
     onTertiaryContainer = Color(0xFFDCE8FF),
-    background = Color(0xFF121212),
+    background = Color(0xFF101012),
     onBackground = Color(0xFFECECEC),
     surface = Color(0xFF1C1C1E),
     onSurface = Color(0xFFECECEC),
@@ -64,7 +66,7 @@ private val MiuixDark = darkColorScheme(
     onError = Color(0xFF5C0000)
 )
 
-/** Material：更接近 Material 3 蓝色体系 */
+/** Material 3 palette: indigo primary, tonal containers and restrained corner radii. */
 private val MaterialLight = lightColorScheme(
     primary = Color(0xFF4056B5),
     onPrimary = Color.White,
@@ -115,15 +117,25 @@ private val MaterialDark = darkColorScheme(
 
 private fun shapesFor(style: UiStyle): Shapes = when (style) {
     UiStyle.MIUIX -> Shapes(
-        small = RoundedCornerShape(12.dp),
-        medium = RoundedCornerShape(16.dp),
-        large = RoundedCornerShape(24.dp)
+        small = RoundedCornerShape(14.dp),
+        medium = RoundedCornerShape(20.dp),
+        large = RoundedCornerShape(28.dp)
     )
     UiStyle.MATERIAL -> Shapes(
         small = RoundedCornerShape(8.dp),
         medium = RoundedCornerShape(12.dp),
         large = RoundedCornerShape(16.dp)
     )
+}
+
+private fun typographyFor(style: UiStyle) = when (style) {
+    UiStyle.MIUIX -> Typography.copy(
+        titleLarge = Typography.titleLarge.copy(fontSize = 21.sp, fontWeight = FontWeight.Medium),
+        titleMedium = Typography.titleMedium.copy(fontSize = 17.sp, fontWeight = FontWeight.Medium),
+        titleSmall = Typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.Medium),
+        bodyMedium = Typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 22.sp)
+    )
+    UiStyle.MATERIAL -> Typography
 }
 
 @Composable
@@ -141,7 +153,7 @@ fun Theme(
     CompositionLocalProvider(LocalUiStyle provides uiStyle) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = Typography,
+            typography = typographyFor(uiStyle),
             shapes = shapesFor(uiStyle),
             content = content
         )
