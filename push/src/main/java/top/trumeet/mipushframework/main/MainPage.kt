@@ -3,11 +3,18 @@ package top.trumeet.mipushframework.main
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +31,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -54,9 +63,7 @@ class MainPage : ComponentActivity() {
         applyOplusWindowStyle()
         mainPageUtils.initOnCreate(applicationContext) { placeholder = it.toString() }
         setContent {
-            var uiStyle by rememberSaveable {
-                mutableStateOf(UiStyle.current(this).key)
-            }
+            var uiStyle by rememberSaveable { mutableStateOf(UiStyle.current(this).key) }
             Main(
                 startDestination = Screen.Overview.route.toString(),
                 uiStyleKey = uiStyle,
@@ -158,72 +165,109 @@ private fun MainTopBar(navController: NavController, isMiuix: Boolean) {
         Screen.Settings.route.toString() -> Screen.Settings
         else -> Screen.Overview
     }
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = if (isMiuix) 0.dp else 1.dp,
-        shadowElevation = if (isMiuix) 0.dp else 2.dp
-    ) {
-        TopAppBar(
-            title = {
-                Text(
-                    stringResource(screen.route),
-                    style = if (isMiuix) MaterialTheme.typography.titleLarge
-                    else MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            colors = TopAppBarDefaults.smallTopAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
+    if (isMiuix) {
+        Column(
+            Modifier.fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 22.dp, vertical = 15.dp)
+        ) {
+            Text(
+                stringResource(screen.route),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
-        )
+        }
+    } else {
+        Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 2.dp) {
+            TopAppBar(
+                title = { Text(stringResource(screen.route), style = MaterialTheme.typography.titleLarge) },
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        }
     }
 }
 
 @Composable
 private fun BottomNavigationBar(navController: NavController, isMiuix: Boolean) {
     val items = listOf(Screen.Overview, Screen.Apps, Screen.Events, Screen.Settings)
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = if (isMiuix) 0.dp else 3.dp,
-        tonalElevation = if (isMiuix) 0.dp else 2.dp,
-        modifier = Modifier.navigationBarsPadding()
-    ) {
-        NavigationBar(
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 0.dp
+    val entry by navController.currentBackStackEntryAsState()
+    val currentRoute = entry?.destination?.route
+    if (isMiuix) {
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.navigationBarsPadding(),
+            shadowElevation = 0.dp
         ) {
-            val entry by navController.currentBackStackEntryAsState()
-            val currentRoute = entry?.destination?.route
-            items.forEach { screen ->
-                val label = stringResource(screen.route)
-                NavigationBarItem(
-                    icon = {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                items.forEach { screen ->
+                    val selected = currentRoute == screen.route.toString()
+                    val label = stringResource(screen.route)
+                    Column(
+                        Modifier.weight(1f)
+                            .clip(RoundedCornerShape(18.dp))
+                            .clickable {
+                                navController.navigate(screen.route.toString()) {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                            .background(
+                                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                else Color.Transparent
+                            )
+                            .padding(vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
                         Icon(
                             painter = painterResource(screen.icon),
-                            contentDescription = label
+                            contentDescription = label,
+                            modifier = Modifier.size(22.dp),
+                            tint = if (selected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    },
-                    label = { Text(label, style = MaterialTheme.typography.labelMedium) },
-                    selected = currentRoute == screen.route.toString(),
-                    onClick = {
-                        navController.navigate(screen.route.toString()) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = if (isMiuix) {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
-                        } else {
-                            MaterialTheme.colorScheme.secondaryContainer
-                        }
+                        Text(
+                            label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (selected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    } else {
+        Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 2.dp) {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
+                items.forEach { screen ->
+                    val label = stringResource(screen.route)
+                    NavigationBarItem(
+                        icon = { Icon(painterResource(screen.icon), contentDescription = label) },
+                        label = { Text(label, style = MaterialTheme.typography.labelMedium) },
+                        selected = currentRoute == screen.route.toString(),
+                        onClick = {
+                            navController.navigate(screen.route.toString()) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
                     )
-                )
+                }
             }
         }
     }
