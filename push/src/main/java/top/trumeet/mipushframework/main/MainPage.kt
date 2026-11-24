@@ -3,6 +3,7 @@ package top.trumeet.mipushframework.main
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -68,9 +69,9 @@ class MainPage : ComponentActivity() {
             Main(
                 startDestination = Screen.Overview.route.toString(),
                 uiStyleKey = uiStyle,
-                onUiStyleChange = {
-                    UiStyle.save(this, it)
-                    uiStyle = it.key
+                onUiStyleChange = { style ->
+                    UiStyle.save(this, style)
+                    uiStyle = style.key
                 }
             ) {
                 {
@@ -166,22 +167,39 @@ private fun MainTopBar(navController: NavController, isMiuix: Boolean) {
         Screen.Settings.route.toString() -> Screen.Settings
         else -> Screen.Overview
     }
+    val title = stringResource(screen.route)
+
     if (isMiuix) {
         Column(
             Modifier.fillMaxWidth()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 22.dp, vertical = 15.dp)
+                .padding(start = 22.dp, end = 22.dp, top = 13.dp, bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             Text(
-                stringResource(screen.route),
+                "MIPUSH FRAMEWORK",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                title,
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
         }
     } else {
-        Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 2.dp) {
+        Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp) {
             TopAppBar(
-                title = { Text(stringResource(screen.route), style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                        Text(title, style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "MiPush Framework",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -195,6 +213,7 @@ private fun BottomNavigationBar(navController: NavController, isMiuix: Boolean) 
     val items = listOf(Screen.Overview, Screen.Apps, Screen.Events, Screen.Settings)
     val entry by navController.currentBackStackEntryAsState()
     val currentRoute = entry?.destination?.route
+
     if (isMiuix) {
         Surface(
             color = MaterialTheme.colorScheme.surface,
@@ -209,6 +228,10 @@ private fun BottomNavigationBar(navController: NavController, isMiuix: Boolean) 
                 items.forEach { screen ->
                     val selected = currentRoute == screen.route.toString()
                     val label = stringResource(screen.route)
+                    val selectedColor by animateColorAsState(
+                        if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Column(
                         Modifier.weight(1f)
                             .clip(RoundedCornerShape(18.dp))
@@ -220,32 +243,30 @@ private fun BottomNavigationBar(navController: NavController, isMiuix: Boolean) 
                                 }
                             }
                             .background(
-                                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.11f)
                                 else Color.Transparent
                             )
                             .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(3.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
                             painter = painterResource(screen.icon),
                             contentDescription = label,
                             modifier = Modifier.size(22.dp),
-                            tint = if (selected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = selectedColor
                         )
                         Text(
                             label,
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (selected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = selectedColor
                         )
                     }
                 }
             }
         }
     } else {
-        Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 2.dp) {
+        Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp) {
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
                 items.forEach { screen ->
                     val label = stringResource(screen.route)
